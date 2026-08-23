@@ -107,40 +107,57 @@ export function ProfileView({
 
       {zines.length ? (
         <section className="grid gap-px bg-[var(--editorial-rule)] sm:grid-cols-2 lg:grid-cols-3">
-          {zines.map((zine, index) => (
-            <article className="bg-white p-5" key={zine.id}>
-              <div className="relative aspect-[3/4] overflow-hidden bg-[#ededed]">
-                {zine.coverImageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    alt=""
-                    className="size-full object-cover"
-                    src={zine.coverImageUrl}
-                  />
-                ) : (
-                  <div className="flex size-full flex-col justify-between p-5">
-                    <span className="text-xs font-bold uppercase tracking-[0.18em]">
-                      Issue {String(index + 1).padStart(2, "0")}
-                    </span>
-                    <strong className="editorial-display text-4xl leading-none text-[var(--editorial-red)]">
-                      {zine.title}
-                    </strong>
-                  </div>
-                )}
-              </div>
-              <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-[var(--editorial-blue)]">
-                {zine.status === "draft" ? "Draft" : "Published"}
-              </p>
-              <h2 className="editorial-display mt-1 text-2xl leading-tight">
-                {zine.title}
-              </h2>
-              {zine.description ? (
-                <p className="editorial-serif mt-2 line-clamp-2 text-sm text-black/65">
-                  {zine.description}
+          {zines.map((zine, index) => {
+            const card = (
+              <>
+                <div className="relative aspect-[3/4] overflow-hidden bg-[#ededed]">
+                  {zine.coverImageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      alt=""
+                      className="size-full object-cover"
+                      src={zine.coverImageUrl}
+                    />
+                  ) : (
+                    <div className="flex size-full flex-col justify-between p-5">
+                      <span className="text-xs font-bold uppercase tracking-[0.18em]">
+                        Issue {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <strong className="editorial-display text-4xl leading-none text-[var(--editorial-red)]">
+                        {zine.title}
+                      </strong>
+                    </div>
+                  )}
+                </div>
+                <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-[var(--editorial-blue)]">
+                  {zine.status === "draft" ? "Draft" : "Published"}
                 </p>
-              ) : null}
-            </article>
-          ))}
+                <h2 className="editorial-display mt-1 text-2xl leading-tight transition-colors group-hover:text-[var(--editorial-red)]">
+                  {zine.title}
+                </h2>
+                {zine.description ? (
+                  <p className="editorial-serif mt-2 line-clamp-2 text-sm text-black/65">
+                    {zine.description}
+                  </p>
+                ) : null}
+              </>
+            );
+
+            return (
+              <article className="bg-white p-5" key={zine.id}>
+                {zine.status === "draft" ? (
+                  <Link
+                    className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--editorial-blue)]"
+                    href={`/create/${zine.id}`}
+                  >
+                    {card}
+                  </Link>
+                ) : (
+                  card
+                )}
+              </article>
+            );
+          })}
         </section>
       ) : (
         <section className="py-16 text-center">

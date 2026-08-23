@@ -139,3 +139,15 @@ Every page mutation verifies that the current database user owns an editable dra
 `npm run typecheck` and `git diff --check` pass. Targeted ESLint again stalled without output in the documented local dependency environment and was stopped. Duplicate generated `.next/types/* 2.ts` files created during concurrent validation were moved to `/tmp` before the successful typecheck.
 
 **Next:** T16 is now unblocked: add the publish flow and lock published zines. T17 can follow once publishing is complete.
+
+## 2026-08-23 — Reviewed and re-planned the creation experience
+
+Ran three parallel agents at the user's request — an implementation audit of the existing editor, competitor research (Canva, Adobe Express, Genially, Flipsnack/Issuu/Joomag, Instagram Stories, Pinterest Shuffles, VSCO, PicCollage/Jodu), and an ideas brainstorm — because the user was unhappy with the current creation experience and called it out as a core differentiator worth real investment. Delivered the synthesis as an artifact, then saved the condensed version to `docs/designs/creation-desk-review.md`.
+
+The audit's headline finding: the page editor (T15) already exists and is more capable underneath than its interface exposes (rotation/color/alignment are stored but have no controls; nothing can bleed off the page; templates don't seed any content). This is a fix-and-extend job, not a rebuild.
+
+The user chose to implement the near-term and differentiating tiers and defer the stretch tier (remix, AI layout suggestions, real-time collab, print export). Two of the differentiating ideas required settled decisions to be reopened, so asked the user directly rather than deciding alone: a curated sticker/shape block type now supersedes the earlier "no stickers/shapes" v1 call, and the editor rebuild targets desktop first (not mobile or both) — both logged in `docs/decisions.md`.
+
+Added `T24`–`T36` to `TODO.md` under "Creation experience overhaul," sequenced so that decomposing the current `zine-editor.tsx` god-file (`T24`) and fixing its coordinate system (`T25`) gate direct manipulation and everything downstream, while profile-page draft linking (`T30`) has no dependency on the editor at all.
+
+**Next:** `T24` and `T30` are the current agent-ready frontier — dispatching both.

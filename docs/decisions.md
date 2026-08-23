@@ -71,3 +71,23 @@ Append-only log of architecture decisions. One entry per decision, newest at the
 **Decision:** Resolve each Clerk session against `users`. If no row exists, send document requests to `/onboarding`. Onboarding collects and validates the handle and display name, then atomically inserts the complete row using Clerk's server-side identity and email. API actions require both an authenticated Clerk session and an existing database user.
 
 **Consequences:** User rows are never incomplete, handle claims remain protected by the database uniqueness constraint, and no webhook is needed for v1. Every new authenticated user must finish onboarding before using protected application features.
+
+## 2026-08-23 — Reopen "no stickers/shapes" for a curated shape block type
+
+**Status:** Accepted; supersedes the "no moderation and no discovery surface in v1" entry's stance on stickers/shapes/embeds.
+
+**Context:** A three-agent review (implementation audit, competitor research, ideas brainstorm) of the zine creation experience found that a small curated sticker/shape tray was one of the highest fun-per-effort additions available, but it directly contradicts the earlier deliberate v1 scope call. The user was asked explicitly and chose to reopen it rather than keep it deferred.
+
+**Decision:** v1 will include a small, curated shape/sticker block type (not user-uploaded stickers, not a generic embed system) — colorable from the zine's palette, added as a third member of the `PageBlock` union alongside `TextBlock`/`ImageBlock`. Everything else in the original "no moderation/discovery" entry (no explore page, no categorization, no standalone posts, no spreads) still stands.
+
+**Consequences:** `pages.blocks` is jsonb with only an "is an array" check constraint, so no migration is needed — this is additive at the type/renderer/validator layer only. Because published zines are immutable, this new block type must be supported by the renderer permanently once it ships to any published page.
+
+## 2026-08-23 — Creation editor targets desktop first
+
+**Status:** Accepted.
+
+**Context:** The rest of the app is mobile-shell-first (fixed bottom nav, safe-area insets), but the page editor is a three-column desktop layout, and the near-term rebuild (drag/resize/rotate, contextual toolbars, touch-target sizing) needed a target before implementation could start. Flagged to the user as a genuine fork rather than decided by default.
+
+**Decision:** The creation/editing experience targets desktop (mouse/trackpad precision, hover states, a persistent side rail) first. It should remain usable on touch but is not optimized for it in this round.
+
+**Consequences:** Touch-first patterns from the competitor research (long-press reordering, floating contextual toolbar, bottom-sheet inspector) are not part of this round's design. Revisit if usage data shows creation happening primarily on mobile.
