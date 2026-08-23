@@ -100,6 +100,39 @@ export function ZineEditor({ clerkUserId, initialPages, zine }: ZineEditorProps)
     setBlockId(null);
   };
 
+  useEffect(() => {
+    if (!block || !page) return;
+
+    const deleteSelectedBlock = (event: KeyboardEvent) => {
+      if (event.key !== "Delete" && event.key !== "Backspace") return;
+      const target = event.target;
+      if (
+        target instanceof HTMLElement &&
+        target.closest("input, textarea, select, [contenteditable='true']")
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      setAllPages((items) =>
+        items.map((item) =>
+          item.id === page.id
+            ? {
+                ...item,
+                blocks: item.blocks.filter((itemBlock) => itemBlock.id !== block.id),
+              }
+            : item,
+        ),
+      );
+      setDirtyPageIds((items) => new Set(items).add(page.id));
+      setBlockId(null);
+      setMessage("Block removed — save the page to keep this change");
+    };
+
+    window.addEventListener("keydown", deleteSelectedBlock);
+    return () => window.removeEventListener("keydown", deleteSelectedBlock);
+  }, [block, page]);
+
   const moveBlock = (direction: "forward" | "backward") => {
     if (!block) return;
     changePage((value) => {
