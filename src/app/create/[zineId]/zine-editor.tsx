@@ -28,7 +28,9 @@ export function ZineEditor(props: ZineEditorProps) {
         message={editor.message}
         onDeleteDraft={editor.removeDraft}
         onExit={editor.guardExit}
+        onPublish={editor.publish}
         onSave={editor.persistPage}
+        publishDisabled={!editor.page || editor.pending}
         saveDisabled={!editor.page || editor.pending}
         templateKey={zine.templateKey}
         title={zine.title}
@@ -58,8 +60,13 @@ export function ZineEditor(props: ZineEditorProps) {
             <InspectorPanel
               background={editor.page?.background ?? null}
               block={editor.block}
+              canAutoArrange={Boolean(
+                editor.page?.blocks.some((block) => block.type === "image"),
+              )}
               onAddImage={(file) => void editor.createImage(file)}
+              onAddShape={editor.createShape}
               onAddText={editor.createText}
+              onAutoArrange={editor.autoArrange}
               onChangeBackground={(background: PageBackground) =>
                 editor.changePage((value) => ({ ...value, background }))
               }

@@ -1,4 +1,10 @@
-import type { ImageBlock, PageBlock, TextBlock } from "@/db/schema";
+import type {
+  ImageBlock,
+  PageBlock,
+  ShapeBlock,
+  ShapeKind,
+  TextBlock,
+} from "@/db/schema";
 import {
   DEFAULT_FONT_FAMILY,
   type CuratedFontFamily,
@@ -29,9 +35,21 @@ export const MAX_BLOCK_SIZE_PERCENT = 300;
 export type PageBlockPatch = Partial<
   Omit<TextBlock, "id" | "type" | "fontFamily">
 > &
-  Partial<Omit<ImageBlock, "id" | "type">> & {
+  Partial<Omit<ImageBlock, "id" | "type">> &
+  Partial<Omit<ShapeBlock, "id" | "type">> & {
     fontFamily?: CuratedFontFamily;
   };
+
+export const SHAPE_OPTIONS = [
+  { kind: "torn-paper", label: "Torn paper" },
+  { kind: "tape", label: "Tape" },
+  { kind: "speech-bubble", label: "Speech bubble" },
+  { kind: "starburst", label: "Starburst" },
+] as const satisfies ReadonlyArray<{ kind: ShapeKind; label: string }>;
+
+export function isShapeKind(value: unknown): value is ShapeKind {
+  return SHAPE_OPTIONS.some(({ kind }) => kind === value);
+}
 
 export function applyPageBlockPatch(
   block: PageBlock,
@@ -57,12 +75,21 @@ export function applyPageBlockPatch(
     };
   }
 
+  if (block.type === "image") {
+    return {
+      ...block,
+      ...frame,
+      url: patch.url ?? block.url,
+      alt: patch.alt ?? block.alt,
+      objectFit: patch.objectFit ?? block.objectFit,
+    };
+  }
+
   return {
     ...block,
     ...frame,
-    url: patch.url ?? block.url,
-    alt: patch.alt ?? block.alt,
-    objectFit: patch.objectFit ?? block.objectFit,
+    shape: patch.shape ?? block.shape,
+    color: patch.color ?? block.color,
   };
 }
 
@@ -104,5 +131,20 @@ export function createImageBlock({ alt, url }: { alt: string; url: string }): Im
     url,
     alt,
     objectFit: "cover",
+  };
+}
+
+export function createShapeBlock(shape: ShapeKind, color: string): ShapeBlock {
+  const wide = shape === "torn-paper" || shape === "tape";
+  return {
+    id: crypto.randomUUID(),
+    type: "shape",
+    x: wide ? 15 : 30,
+    y: wide ? 20 : 25,
+    width: wide ? 70 : 40,
+    height: wide ? 16 : 35,
+    rotation: shape === "tape" ? -4 : 0,
+    shape,
+    color,
   };
 }

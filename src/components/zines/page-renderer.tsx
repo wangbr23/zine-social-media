@@ -2,7 +2,7 @@
 
 import type { KeyboardEvent, PointerEvent } from "react";
 
-import type { PageBackground, PageBlock } from "@/db/schema";
+import type { PageBackground, PageBlock, ShapeKind } from "@/db/schema";
 import { pageUnitsToCss } from "@/lib/zines/blocks";
 
 export type RenderablePage = {
@@ -144,6 +144,10 @@ function BlockContent({ block }: { block: PageBlock }) {
     );
   }
 
+  if (block.type === "shape") {
+    return <ShapeArtwork color={block.color} shape={block.shape} />;
+  }
+
   return (
     // Block images are arbitrary uploaded blobs rendered at author-chosen frames,
     // so they skip next/image rather than requiring a host allowlist and layout rules.
@@ -155,6 +159,30 @@ function BlockContent({ block }: { block: PageBlock }) {
       draggable={false}
       src={block.url}
       style={{ objectFit: block.objectFit }}
+    />
+  );
+}
+
+export function ShapeArtwork({ color, shape }: { color: string; shape: ShapeKind }) {
+  if (shape === "speech-bubble") {
+    return (
+      <svg aria-hidden="true" className="h-full w-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+        <path d="M5 5H95V74H38L19 96L23 74H5Z" fill={color} />
+      </svg>
+    );
+  }
+
+  const clipPath = shape === "starburst"
+    ? "polygon(50% 0%,61% 25%,82% 8%,78% 35%,100% 35%,82% 52%,98% 72%,72% 70%,72% 100%,52% 78%,32% 98%,33% 72%,5% 79%,22% 56%,0% 42%,27% 35%,18% 10%,42% 26%)"
+    : shape === "torn-paper"
+      ? "polygon(0 8%,8% 2%,15% 10%,23% 3%,31% 11%,40% 1%,49% 9%,58% 2%,67% 10%,76% 3%,86% 11%,94% 2%,100% 8%,98% 91%,90% 98%,82% 89%,73% 97%,64% 88%,55% 99%,46% 90%,37% 97%,28% 89%,18% 98%,9% 90%,1% 96%)"
+      : "polygon(3% 8%,98% 0%,95% 92%,0% 100%)";
+
+  return (
+    <div
+      aria-hidden="true"
+      className={`h-full w-full ${shape === "tape" ? "opacity-75" : ""}`}
+      style={{ backgroundColor: color, clipPath }}
     />
   );
 }

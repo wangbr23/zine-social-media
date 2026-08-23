@@ -1,18 +1,22 @@
 "use client";
 
-import type { PageBackground, PageBlock } from "@/db/schema";
+import type { PageBackground, PageBlock, ShapeKind } from "@/db/schema";
 import type { PageBlockPatch } from "@/lib/zines/blocks";
 import { PAGE_IMAGE_ACCEPT } from "@/lib/zines/page-images";
 
 import { BackgroundEditor } from "./background-editor";
 import { BlockEditor } from "./block-editor";
+import { ShapeTray } from "./shape-tray";
 
 type InspectorPanelProps = {
   /** Null when no page is selected, which also disables the block tools. */
   background: PageBackground | null;
   block: PageBlock | null;
+  canAutoArrange: boolean;
   onAddText: () => void;
   onAddImage: (file: File | undefined) => void;
+  onAddShape: (shape: ShapeKind, color: string) => void;
+  onAutoArrange: () => void;
   onChangeBackground: (value: PageBackground) => void;
   onChangeBlock: (value: PageBlockPatch) => void;
   onDeleteBlock: () => void;
@@ -21,8 +25,11 @@ type InspectorPanelProps = {
 export function InspectorPanel({
   background,
   block,
+  canAutoArrange,
   onAddText,
   onAddImage,
+  onAddShape,
+  onAutoArrange,
   onChangeBackground,
   onChangeBlock,
   onDeleteBlock,
@@ -57,6 +64,20 @@ export function InspectorPanel({
           />
         </label>
       </div>
+      <button
+        className="editorial-button mt-2 w-full border border-black bg-[#f4df42] px-3 py-3 text-sm font-bold"
+        disabled={!canAutoArrange}
+        onClick={onAutoArrange}
+        type="button"
+      >
+        Shuffle this page
+      </button>
+      <p className="editorial-serif mt-2 text-xs text-black/55">
+        {canAutoArrange
+          ? "Cycles your images through mood-board, grid, and hero compositions."
+          : "Add an image to unlock automatic compositions."}
+      </p>
+      <ShapeTray disabled={disabled} onAddShape={onAddShape} />
       {background ? (
         <BackgroundEditor background={background} onChange={onChangeBackground} />
       ) : null}

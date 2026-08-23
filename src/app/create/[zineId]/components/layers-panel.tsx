@@ -11,6 +11,7 @@ type LayersPanelProps = {
 
 function layerName(block: PageBlock) {
   if (block.type === "image") return block.alt.trim() || "Untitled image";
+  if (block.type === "shape") return block.shape.replace("-", " ");
 
   const text = block.text.trim().replace(/\s+/g, " ");
   return text || "Empty text";

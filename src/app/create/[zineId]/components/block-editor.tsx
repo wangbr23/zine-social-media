@@ -106,7 +106,7 @@ export function BlockEditor({ block, onChange, onDelete }: BlockEditorProps) {
             </select>
           </label>
         </>
-      ) : (
+      ) : block.type === "image" ? (
         <>
           <label className="mt-4 block text-xs font-bold uppercase">
             Alt text
@@ -133,6 +133,26 @@ export function BlockEditor({ block, onChange, onDelete }: BlockEditorProps) {
             </select>
           </label>
         </>
+      ) : (
+        <label className="mt-4 block text-xs font-bold uppercase">
+          Shape color
+          <ColorSwatches
+            label="Zine palette shape colors"
+            onSelect={(color) => onChange({ color })}
+          />
+          <div className="mt-1 flex items-center gap-2 border border-black p-2">
+            <input
+              aria-label="Shape color"
+              className="h-8 w-10 cursor-pointer border-0 bg-transparent p-0"
+              onChange={(event) => onChange({ color: event.target.value })}
+              type="color"
+              value={block.color}
+            />
+            <span className="font-mono text-xs font-normal normal-case">
+              {block.color.toUpperCase()}
+            </span>
+          </div>
+        </label>
       )}
       <p className="editorial-serif mt-6 text-xs text-black/55">
         Drag the block on the page to move it, its handles to resize, and the knob above it

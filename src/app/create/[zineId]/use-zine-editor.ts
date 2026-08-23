@@ -1,12 +1,17 @@
 "use client";
 
-import { type MouseEvent, useEffect, useState, useTransition } from "react";
+import { type MouseEvent, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
-import type { PageBlock, ZinePalette } from "@/db/schema";
+import type { PageBlock, ShapeKind, ZinePalette } from "@/db/schema";
+import {
+  AUTO_ARRANGE_LAYOUTS,
+  autoArrangeImages,
+} from "@/lib/zines/auto-arrange";
 import {
   applyPageBlockPatch,
   createImageBlock,
+  createShapeBlock,
   createTextBlock,
   type PageBlockPatch,
 } from "@/lib/zines/blocks";
@@ -19,7 +24,14 @@ import {
 import { sampleImagePalette } from "@/lib/zines/palette-sampler";
 import { zinePaletteFrom } from "@/lib/zines/palettes";
 
-import { addPage, deletePage, type EditorPage, savePage, savePalette } from "./actions";
+import {
+  addPage,
+  deletePage,
+  type EditorPage,
+  publishZine,
+  savePage,
+  savePalette,
+} from "./actions";
 
 export type EditorZine = {
   id: string;
@@ -34,6 +46,7 @@ type Options = { clerkUserId: string; initialPages: EditorPage[]; zine: EditorZi
 
 export function useZineEditor({ clerkUserId, initialPages, zine }: Options) {
   const router = useRouter();
+  const nextLayoutIndex = useRef(0);
   const [allPages, setAllPages] = useState(initialPages);
   const [pageId, setPageId] = useState(initialPages[0]?.id ?? null);
   const [blockId, setBlockId] = useState<string | null>(null);
@@ -178,6 +191,22 @@ export function useZineEditor({ clerkUserId, initialPages, zine }: Options) {
     setMessage(result.ok ? "Saved" : result.error);
   });
 
+  const publish = () => {
+    if (hasUnsavedChanges) {
+      setMessage("Save every changed page before publishing.");
+      return;
+    }
+    if (!window.confirm(`Publish “${zine.title}”? Published zines cannot be edited.`)) return;
+
+    startTransition(async () => {
+      setMessage("Publishing…");
+      const result = await publishZine(zine.id);
+      if (!result.ok) return setMessage(result.error);
+      router.replace("/profile");
+      router.refresh();
+    });
+  };
+
   const removePage = () => page && window.confirm(`Delete page ${page.pageNumber}?`) && startTransition(async () => {
     const result = await deletePage(zine.id, page.id);
     if (!result.ok) return setMessage(result.error);
@@ -190,6 +219,20 @@ export function useZineEditor({ clerkUserId, initialPages, zine }: Options) {
   });
 
   const createText = () => page && addBlock(createTextBlock());
+
+  const createShape = (shape: ShapeKind, color: string) =>
+    page && addBlock(createShapeBlock(shape, color));
+
+  const autoArrange = () => {
+    if (!page || !page.blocks.some((item) => item.type === "image")) return;
+    const layout = AUTO_ARRANGE_LAYOUTS[nextLayoutIndex.current];
+    nextLayoutIndex.current = (nextLayoutIndex.current + 1) % AUTO_ARRANGE_LAYOUTS.length;
+    changePage((value) => ({
+      ...value,
+      blocks: autoArrangeImages(value.blocks, layout.key),
+    }));
+    setMessage(`${layout.label} applied — save the page to keep it`);
+  };
 
   const createImage = async (file: File | undefined) => {
     if (!file || !page) return;
@@ -229,9 +272,9 @@ export function useZineEditor({ clerkUserId, initialPages, zine }: Options) {
   };
 
   return {
-    allPages, block, blockId, changeBlock, changeBlockById, changePage, createImage,
-    createPage, createText, guardExit, message, moveBlock, page, pageId, palette,
-    pending, persistPage, removeBlock, removeDraft, removePage, selectBlock: setBlockId,
+    allPages, autoArrange, block, blockId, changeBlock, changeBlockById, changePage, createImage,
+    createPage, createShape, createText, guardExit, message, moveBlock, page, pageId, palette,
+    pending, persistPage, publish, removeBlock, removeDraft, removePage, selectBlock: setBlockId,
     selectPage,
   };
 }

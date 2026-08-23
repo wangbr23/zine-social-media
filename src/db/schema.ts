@@ -59,7 +59,21 @@ export type ImageBlock = {
   objectFit: "cover" | "contain";
 };
 
-export type PageBlock = TextBlock | ImageBlock;
+export type ShapeKind = "torn-paper" | "tape" | "speech-bubble" | "starburst";
+
+export type ShapeBlock = {
+  id: string;
+  type: "shape";
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  shape: ShapeKind;
+  color: string;
+};
+
+export type PageBlock = TextBlock | ImageBlock | ShapeBlock;
 
 export const users = pgTable(
   "users",

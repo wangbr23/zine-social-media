@@ -8,9 +8,11 @@ type EditorHeaderProps = {
   templateKey: string | null;
   message: string | null;
   saveDisabled: boolean;
+  publishDisabled: boolean;
   onExit: (event: MouseEvent<HTMLAnchorElement>) => void;
   onDeleteDraft: () => void;
   onSave: () => void;
+  onPublish: () => void;
 };
 
 export function EditorHeader({
@@ -18,9 +20,11 @@ export function EditorHeader({
   templateKey,
   message,
   saveDisabled,
+  publishDisabled,
   onExit,
   onDeleteDraft,
   onSave,
+  onPublish,
 }: EditorHeaderProps) {
   return (
     <header className="flex flex-wrap items-center justify-between gap-4 border-b border-black bg-white px-5 py-4 md:px-8">
@@ -56,6 +60,14 @@ export function EditorHeader({
           type="button"
         >
           Save page
+        </button>
+        <button
+          className="editorial-button bg-[var(--editorial-red)] px-5 py-3 text-sm font-bold uppercase text-white disabled:opacity-50"
+          disabled={publishDisabled}
+          onClick={onPublish}
+          type="button"
+        >
+          Publish
         </button>
       </div>
     </header>

@@ -315,3 +315,29 @@ Removed the page-creation non-null assertion, create-form fallback casts, server
 `npm run typecheck`, full `npm run lint`, `git diff --check`, and `npm run build -- --webpack` pass. The production build reports all expected routes.
 
 **Next:** The cleanup audit is complete. Resume T16 publishing, then T32 and T34 sequentially as requested.
+
+## 2026-08-23 — Added atomic zine publishing
+
+Completed T16. The editor now exposes an explicit Publish action with an irreversible-action confirmation and requires all changed pages to be saved first. The server action atomically changes an owned draft to `published`, sets `publishedAt` and `updatedAt`, and requires at least one persisted page in the same conditional update. Because publishing locks the same zine row used by editor mutations, it serializes against page writes and published zines remain inaccessible to the draft-only editor.
+
+Targeted ESLint and `git diff --check` pass. The full typecheck was attempted while T32 was being implemented in the shared worktree and is temporarily blocked by that in-progress agent's new `ShapeBlock` branches in the block editor and layers panel.
+
+**Next:** Integrate and verify T32, then proceed with T34. T17 is now unblocked when work resumes on the core publishing-to-reader path.
+
+## 2026-08-23 — Added the curated shape and sticker tray
+
+Completed T32. Pages now support a persisted `ShapeBlock` alongside text and image blocks, with torn-paper, tape, speech-bubble, and starburst variants. The editor's palette-aware tray adds each shape with a useful starting frame; selected shapes can be recolored from the zine palette or color picker and use the existing drag, resize, rotate, delete, and layers controls. The shared page renderer draws the same artwork in interactive and static contexts, and server validation accepts only the four curated kinds.
+
+No database migration was needed because page blocks are persisted in the existing JSONB array. `npm run typecheck`, full `npm run lint`, `git diff --check`, and `npm run build -- --webpack` pass with the parallel T16 publishing changes integrated.
+
+**Next:** T34 auto-arrange is the next task in the requested creation-work sequence. T33 image treatments is also now unblocked by T32.
+
+## 2026-08-23 — Added page auto-arrange
+
+Completed T34. The editor now offers a “Shuffle this page” action once the current page has an image. Each click cycles through scattered mood-board, editorial-grid, and hero-plus-three compositions, updating image frames while preserving image content, non-image blocks, and the existing layer order. Auto-arrangement uses the normal dirty-page flow, so the result stays reversible until the user explicitly saves the page.
+
+The layout generator is a browser-safe pure module with responsive percentage frames and graceful handling for both single-image and unusually image-heavy pages. No schema, migration, dependency, or server action was needed.
+
+`npm run typecheck`, full `npm run lint`, `git diff --check`, and `npm run build -- --webpack` pass with T16 and T32's uncommitted changes integrated.
+
+**Next:** T33 image treatments and T17's public reader view are both unblocked; T36 still follows T17.

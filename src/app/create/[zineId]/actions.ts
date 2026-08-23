@@ -13,6 +13,7 @@ import {
   MAX_FONT_SIZE_UNITS,
   MIN_BLOCK_POSITION_PERCENT,
   MIN_FONT_SIZE_UNITS,
+  isShapeKind,
 } from "@/lib/zines/blocks";
 import { isCuratedFontFamily } from "@/lib/zines/fonts";
 import {
@@ -26,6 +27,7 @@ export type EditorResult =
   | { ok: true; page: EditorPage }
   | { ok: false; error: string };
 export type DeletePageResult = { ok: true } | { ok: false; error: string };
+export type PublishZineResult = { ok: true } | { ok: false; error: string };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object";
@@ -75,6 +77,7 @@ function validBlock(value: unknown): value is PageBlock {
   if (typeof item.id !== "string" || !validFrame(item)) return false;
   if (item.type === "text") return typeof item.text === "string" && item.text.length <= 5000 && isCuratedFontFamily(item.fontFamily) && typeof item.fontSize === "number" && item.fontSize >= MIN_FONT_SIZE_UNITS && item.fontSize <= MAX_FONT_SIZE_UNITS && typeof item.color === "string" && (item.textAlign === "left" || item.textAlign === "center" || item.textAlign === "right");
   if (item.type === "image") return typeof item.url === "string" && item.url.startsWith("https://") && typeof item.alt === "string" && item.alt.length <= 500 && (item.objectFit === "cover" || item.objectFit === "contain");
+  if (item.type === "shape") return isShapeKind(item.shape) && typeof item.color === "string" && item.color.length > 0 && item.color.length <= 100;
   return false;
 }
 
@@ -231,5 +234,44 @@ export async function deletePage(
   } catch (error) {
     console.error("Delete zine page failed", { zineId, pageId, error });
     return { ok: false, error: "Could not delete this page. Please try again." };
+  }
+}
+
+export async function publishZine(zineId: string): Promise<PublishZineResult> {
+  const user = await requireCurrentDatabaseUser();
+
+  try {
+    const result = await db.execute<{ id: string }>(sql`
+      update ${zines}
+      set
+        "status" = 'published',
+        "published_at" = now(),
+        "updated_at" = now()
+      where
+        ${zines.id} = ${zineId}
+        and ${zines.userId} = ${user.id}
+        and ${zines.status} = 'draft'
+        and exists (
+          select 1
+          from ${pages}
+          where ${pages.zineId} = ${zines.id}
+        )
+      returning ${zines.id} as "id"
+    `);
+
+    if (!result.rows.length) {
+      return {
+        ok: false,
+        error: "This draft could not be published. Add and save at least one page, then try again.",
+      };
+    }
+
+    revalidatePath("/profile");
+    revalidatePath(`/magazine/${user.handle}`);
+    revalidatePath(`/create/${zineId}`);
+    return { ok: true };
+  } catch (error) {
+    console.error("Publish zine failed", { zineId, error });
+    return { ok: false, error: "Could not publish this zine. Please try again." };
   }
 }

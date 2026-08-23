@@ -23,7 +23,7 @@ A social platform for creating, publishing, and browsing zines: think Instagram,
 
 ### Creation & editor
 - A zine is page-based with a **fixed aspect ratio**, chosen once at creation, so the flip-through reading experience is consistent.
-- Editor blocks (v1): text boxes (with a curated font list), image upload, background color/gradient. No stickers/shapes/embeds yet.
+- Editor blocks (v1): text boxes (with a curated font list), image upload, a curated set of palette-colorable shapes/stickers, and background color/gradient. Generic embeds and user-uploaded stickers remain out of scope.
 - Creators start from either one of two **starter templates** (The Dispatch or Photo Essay, each with a palette and font pairing) or a **blank canvas**.
 - A zine can be saved as a **draft** (editable) before publishing.
 - Once **published, a zine is locked** (immutable) — matches the "printed issue" metaphor. A revision ships as a new zine, not an edit to the old one.
