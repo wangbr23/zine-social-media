@@ -2,14 +2,18 @@
 
 import { type MouseEvent, useEffect, useState, useTransition } from "react";
 
-import type { PageBackground, PageBlock } from "@/db/schema";
+import type { PageBackground, PageBlock, ZinePalette } from "@/db/schema";
 import { createImageBlock, createTextBlock } from "@/lib/zines/blocks";
 import { imageAltFromFileName, uploadPageImage } from "@/lib/zines/page-images";
+import { sampleImagePalette } from "@/lib/zines/palette-sampler";
 
-import { addPage, deletePage, type EditorPage, savePage } from "./actions";
+import { addPage, deletePage, type EditorPage, savePage, savePalette } from "./actions";
 import { EditorCanvas } from "./components/editor-canvas";
 import { EditorHeader } from "./components/editor-header";
 import { InspectorPanel } from "./components/inspector-panel";
+import { LayersPanel } from "./components/layers-panel";
+import { PalettePanel } from "./components/palette-panel";
+import { PaletteProvider } from "./components/palette-context";
 import { PageRail } from "./components/page-rail";
 
 type Zine = {
@@ -18,6 +22,7 @@ type Zine = {
   aspectWidth: number;
   aspectHeight: number;
   templateKey: string | null;
+  palette: ZinePalette;
 };
 
 type ZineEditorProps = {
@@ -31,6 +36,7 @@ export function ZineEditor({ clerkUserId, initialPages, zine }: ZineEditorProps)
   const [pageId, setPageId] = useState(initialPages[0]?.id ?? null);
   const [blockId, setBlockId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [palette, setPalette] = useState(zine.palette);
   // Edits live in `allPages` until saved, so a page stays dirty even after the
   // user switches away from it — track ids, not a single current-page flag.
   const [dirtyPageIds, setDirtyPageIds] = useState<ReadonlySet<string>>(
@@ -92,6 +98,24 @@ export function ZineEditor({ clerkUserId, initialPages, zine }: ZineEditorProps)
       blocks: value.blocks.filter((item) => item.id !== block.id),
     }));
     setBlockId(null);
+  };
+
+  const moveBlock = (direction: "forward" | "backward") => {
+    if (!block) return;
+    changePage((value) => {
+      const currentIndex = value.blocks.findIndex((item) => item.id === block.id);
+      const nextIndex = currentIndex + (direction === "forward" ? 1 : -1);
+      if (currentIndex < 0 || nextIndex < 0 || nextIndex >= value.blocks.length) {
+        return value;
+      }
+
+      const blocks = [...value.blocks];
+      [blocks[currentIndex], blocks[nextIndex]] = [
+        blocks[nextIndex],
+        blocks[currentIndex],
+      ];
+      return { ...value, blocks };
+    });
   };
 
   const selectPage = (id: string) => {
@@ -163,8 +187,20 @@ export function ZineEditor({ clerkUserId, initialPages, zine }: ZineEditorProps)
     if (!file || !page) return;
     setMessage("Uploading image…");
     try {
+      const sampledPalette = sampleImagePalette(file).catch((error) => {
+        console.warn("Image palette sampling failed", error);
+        return null;
+      });
       const url = await uploadPageImage({ clerkUserId, file });
       addBlock(createImageBlock({ alt: imageAltFromFileName(file.name), url }));
+      const sampled = await sampledPalette;
+      if (sampled) {
+        // A nearly monochrome photo may not contain five distinct sampled buckets;
+        // keep the remaining established zine colors instead of inventing new ones.
+        const nextPalette = [...new Set([...sampled, ...palette])].slice(0, 5);
+        const result = await savePalette(zine.id, nextPalette);
+        if (result.ok) setPalette(nextPalette);
+      }
       setMessage("Image uploaded — save the page to keep it");
     } catch (error) {
       console.error("Image upload failed", error);
@@ -201,17 +237,28 @@ export function ZineEditor({ clerkUserId, initialPages, zine }: ZineEditorProps)
           page={page}
           selectedBlockId={blockId}
         />
-        <InspectorPanel
-          background={page?.background ?? null}
-          block={block}
-          onAddImage={(file) => void createImage(file)}
-          onAddText={createText}
-          onChangeBackground={(background: PageBackground) =>
-            changePage((value) => ({ ...value, background }))
-          }
-          onChangeBlock={changeBlock}
-          onDeleteBlock={removeBlock}
-        />
+        <PaletteProvider palette={palette}>
+          <div className="grid content-start gap-5">
+            <PalettePanel palette={palette} />
+            <InspectorPanel
+              background={page?.background ?? null}
+              block={block}
+              onAddImage={(file) => void createImage(file)}
+              onAddText={createText}
+              onChangeBackground={(background: PageBackground) =>
+                changePage((value) => ({ ...value, background }))
+              }
+              onChangeBlock={changeBlock}
+              onDeleteBlock={removeBlock}
+            />
+            <LayersPanel
+              blocks={page?.blocks ?? []}
+              onMoveBlock={moveBlock}
+              onSelectBlock={setBlockId}
+              selectedBlockId={blockId}
+            />
+          </div>
+        </PaletteProvider>
       </div>
     </main>
   );

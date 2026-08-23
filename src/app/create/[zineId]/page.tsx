@@ -16,7 +16,7 @@ export default async function DraftReadyPage({ params }: { params: Promise<{ zin
 
   const { zineId } = await params;
   const [zine] = await db
-    .select({ id: zines.id, title: zines.title, aspectWidth: zines.aspectWidth, aspectHeight: zines.aspectHeight, templateKey: zines.templateKey })
+    .select({ id: zines.id, title: zines.title, aspectWidth: zines.aspectWidth, aspectHeight: zines.aspectHeight, templateKey: zines.templateKey, palette: zines.palette })
     .from(zines)
     .innerJoin(users, eq(zines.userId, users.id))
     .where(

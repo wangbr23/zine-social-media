@@ -29,6 +29,8 @@ export type PageBackground = {
   value: string;
 };
 
+export type ZinePalette = string[];
+
 export type TextBlock = {
   id: string;
   type: "text";
@@ -110,6 +112,10 @@ export const zines = pgTable(
     aspectWidth: integer("aspect_width").notNull(),
     aspectHeight: integer("aspect_height").notNull(),
     templateKey: text("template_key"),
+    palette: jsonb("palette")
+      .$type<ZinePalette>()
+      .notNull()
+      .default(["#111111", "#ffffff", "#ef2d32", "#2455ff", "#f5e9d4"]),
     coverImageUrl: text("cover_image_url"),
     publishedAt: timestamp("published_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })

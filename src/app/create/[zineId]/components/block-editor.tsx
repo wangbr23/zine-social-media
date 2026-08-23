@@ -9,6 +9,8 @@ import {
   MIN_FONT_SIZE_UNITS,
 } from "@/lib/zines/blocks";
 
+import { ColorSwatches } from "./color-swatches";
+
 const fonts = ["Georgia", "Arial", "Courier New", "Impact"];
 const frameFields = ["x", "y", "width", "height"] as const;
 
@@ -57,6 +59,10 @@ export function BlockEditor({ block, onChange, onDelete }: BlockEditorProps) {
           </label>
           <label className="mt-3 block text-xs font-bold uppercase">
             Text color
+            <ColorSwatches
+              label="Zine palette text colors"
+              onSelect={(color) => onChange({ color })}
+            />
             <div className="mt-1 flex items-center gap-2 border border-black p-2">
               <input
                 aria-label="Text color"

@@ -13,6 +13,7 @@ import {
   MIN_BLOCK_POSITION_PERCENT,
   MIN_FONT_SIZE_UNITS,
 } from "@/lib/zines/blocks";
+import { isZinePalette } from "@/lib/zines/palettes";
 
 export type EditorPage = { id: string; pageNumber: number; background: PageBackground; blocks: PageBlock[] };
 export type EditorResult = { ok: true; page?: EditorPage } | { ok: false; error: string };
@@ -85,6 +86,29 @@ export async function savePage(zineId: string, pageId: string, background: unkno
   } catch (error) {
     console.error("Save zine page failed", { zineId, pageId, error });
     return { ok: false, error: "Could not save this page. Please try again." };
+  }
+}
+
+export async function savePalette(
+  zineId: string,
+  palette: unknown,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const user = await requireCurrentDatabaseUser();
+  if (!(await ownsDraft(zineId, user.id))) {
+    return { ok: false, error: "Draft not found." };
+  }
+  if (!isZinePalette(palette)) {
+    return { ok: false, error: "This image did not produce a valid palette." };
+  }
+  try {
+    await db
+      .update(zines)
+      .set({ palette, updatedAt: new Date() })
+      .where(and(eq(zines.id, zineId), eq(zines.userId, user.id)));
+    return { ok: true };
+  } catch (error) {
+    console.error("Save zine palette failed", { zineId, error });
+    return { ok: false, error: "Could not save the sampled palette." };
   }
 }
 

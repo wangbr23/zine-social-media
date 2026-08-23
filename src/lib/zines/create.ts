@@ -7,6 +7,7 @@ import {
   type ZineTemplateKey,
 } from "@/lib/zines/options";
 import { firstPageForTemplate } from "@/lib/zines/templates";
+import { paletteForTemplate } from "@/lib/zines/palettes";
 
 function slugifyTitle(title: string) {
   const slug = title
@@ -33,6 +34,7 @@ export async function createDraftZine(input: {
     input.aspectRatio.width,
     input.aspectRatio.height,
   );
+  const palette = paletteForTemplate(input.templateKey);
   // Seeding page 1 inside the same statement keeps a templated draft from ever
   // existing without its opening page. A data-modifying CTE runs even though the
   // outer query never selects from it, and inserts nothing when the zine insert
@@ -61,7 +63,8 @@ export async function createDraftZine(input: {
           "slug",
           "aspect_width",
           "aspect_height",
-          "template_key"
+          "template_key",
+          "palette"
         )
         select
           ${users.id},
@@ -69,7 +72,8 @@ export async function createDraftZine(input: {
           ${slug},
           ${input.aspectRatio.width},
           ${input.aspectRatio.height},
-          ${input.templateKey}
+          ${input.templateKey},
+          ${JSON.stringify(palette)}::jsonb
         from ${users}
         where ${users.clerkUserId} = ${input.clerkUserId}
         on conflict do nothing

@@ -191,3 +191,29 @@ Direct manipulation now permits moving and resizing blocks across page edges for
 `npm run typecheck`, targeted ESLint, and `git diff --check` pass.
 
 **Next:** T29 (per-zine palettes) and T35 (layers panel) are now unblocked and can proceed independently. T16 publishing is also still ready on the original v1 path.
+
+## 2026-08-23 — Added the layers panel
+
+Completed T35. The editor now shows the current page's block stack in visual top-to-bottom order, with concise text or image labels. Selecting a layer selects the same block on the canvas and in the inspector. Bring-forward and send-back controls swap the selected block with its adjacent neighbor, preserving the existing `pages.blocks` array as the single z-order representation and requiring no schema or save-action changes.
+
+`npm run typecheck`, targeted ESLint, and `git diff --check` pass.
+
+**Next:** Finish T29's concurrent palette work. T16 publishing remains ready on the original v1 path, and T32 becomes available after T29.
+
+## 2026-08-23 — Added per-zine palettes
+
+Completed T29. Every zine now persists a five-color palette seeded from its selected starter template. The editor presents that palette as a compact swatch strip and repeats the swatches beside background and text color controls, while retaining the native custom color inputs.
+
+Successful photo uploads sample frequent, visually distinct colors in the browser and promote them into the zine palette. Nearly monochrome images keep existing colors for any unfilled slots rather than fabricating unrelated colors. Palette updates are validated and owner-scoped on the server. Added a Drizzle migration that backfills existing template-based drafts with their corresponding starter palettes.
+
+`npm run typecheck`, targeted ESLint, and `git diff --check` pass.
+
+**Next:** T32 (curated shapes/stickers), T34 (auto-arrange), and T16 (publishing) are now agent-ready. T35 is complete.
+
+## 2026-08-23 — Integrated T29 and T35
+
+Reviewed the concurrent palette and layers changes together. Their shared editor integration composes cleanly: palette state surrounds the color-aware inspector, while the layers panel remains a separate view over the current page's existing block array. Applied the additive `zines.palette` migration and template-aware backfill to the connected Neon database.
+
+The combined `npm run typecheck`, targeted ESLint, `git diff --check`, and `npm run build -- --webpack` pass. All expected application routes are present in the production build.
+
+**Next:** T32, T34, and T16 are independent agent-ready tasks. T33 remains gated by T32, while T17 follows T16.

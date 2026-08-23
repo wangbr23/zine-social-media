@@ -2,6 +2,8 @@
 
 import type { PageBackground } from "@/db/schema";
 
+import { ColorSwatches } from "./color-swatches";
+
 const backgrounds: PageBackground[] = [
   { type: "color", value: "#ffffff" },
   { type: "color", value: "#f5e9d4" },
@@ -32,6 +34,10 @@ export function BackgroundEditor({ background, onChange }: BackgroundEditorProps
       </div>
       <label className="mt-4 block text-xs font-bold uppercase">
         Custom color
+        <ColorSwatches
+          label="Zine palette background colors"
+          onSelect={(value) => onChange({ type: "color", value })}
+        />
         <input
           className="mt-1 block h-10 w-full"
           onChange={(event) => onChange({ type: "color", value: event.target.value })}
