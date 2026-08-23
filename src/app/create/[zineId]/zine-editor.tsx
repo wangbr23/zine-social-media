@@ -1,11 +1,13 @@
 "use client";
 
 import { type MouseEvent, useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 
 import type { PageBackground, PageBlock, ZinePalette } from "@/db/schema";
 import { createImageBlock, createTextBlock } from "@/lib/zines/blocks";
 import { imageAltFromFileName, uploadPageImage } from "@/lib/zines/page-images";
 import { sampleImagePalette } from "@/lib/zines/palette-sampler";
+import { deleteDraftZine } from "@/lib/zines/draft-actions";
 
 import { addPage, deletePage, type EditorPage, savePage, savePalette } from "./actions";
 import { EditorCanvas } from "./components/editor-canvas";
@@ -32,6 +34,7 @@ type ZineEditorProps = {
 };
 
 export function ZineEditor({ clerkUserId, initialPages, zine }: ZineEditorProps) {
+  const router = useRouter();
   const [allPages, setAllPages] = useState(initialPages);
   const [pageId, setPageId] = useState(initialPages[0]?.id ?? null);
   const [blockId, setBlockId] = useState<string | null>(null);
@@ -176,6 +179,24 @@ export function ZineEditor({ clerkUserId, initialPages, zine }: ZineEditorProps)
     }
   };
 
+  const removeDraft = () => {
+    if (
+      !window.confirm(
+        `Delete “${zine.title}” permanently? All of its pages will be removed. This cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await deleteDraftZine(zine.id);
+      if (!result.ok) return setMessage(result.error);
+      setDirtyPageIds(new Set());
+      router.replace("/profile?tab=drafts");
+      router.refresh();
+    });
+  };
+
   const createPage = () =>
     startTransition(async () => {
       const result = await addPage(zine.id);
@@ -245,6 +266,7 @@ export function ZineEditor({ clerkUserId, initialPages, zine }: ZineEditorProps)
     <main className="min-h-screen bg-[#efefec] pb-8">
       <EditorHeader
         message={message}
+        onDeleteDraft={removeDraft}
         onExit={guardExit}
         onSave={persistPage}
         saveDisabled={!page || pending}

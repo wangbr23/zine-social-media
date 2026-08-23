@@ -2,6 +2,7 @@ import { BottomNav } from "@/components/editorial/bottom-nav";
 import { ProfileView } from "@/components/profile/profile-view";
 import { FollowRequests } from "@/components/profile/follow-requests";
 import { requireCurrentDatabaseUser } from "@/lib/auth/user";
+import { deleteDraftZine } from "@/lib/zines/draft-actions";
 import {
   getDraftZines,
   getPendingFollowRequests,
@@ -37,6 +38,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
         requests={followRequests}
       />
       <ProfileView
+        deleteDraftAction={deleteDraftZine}
         isOwner
         profile={user}
         tab={tab}

@@ -217,3 +217,13 @@ Reviewed the concurrent palette and layers changes together. Their shared editor
 The combined `npm run typecheck`, targeted ESLint, `git diff --check`, and `npm run build -- --webpack` pass. All expected application routes are present in the production build.
 
 **Next:** T32, T34, and T16 are independent agent-ready tasks. T33 remains gated by T32, while T17 follows T16.
+
+## 2026-08-23 — Added draft deletion and editor interaction fixes
+
+Added T37 so owners can permanently delete drafts from either their Profile Drafts tab or the open editor. Both entry points require explicit confirmation; the shared server action scopes deletion to the authenticated owner and `draft` status, so published issues cannot be removed through it. Existing foreign-key cascades remove the draft's page records.
+
+Also corrected the editor grid so a growing inspector no longer vertically displaces the page, added direct inline text editing on the canvas, and added Delete/Backspace keyboard removal for selected blocks while preserving normal behavior inside form and text-editing fields. Removed temporary Blob authorization diagnostics after the production configuration issue was resolved.
+
+Typecheck, targeted ESLint, and `git diff --check` pass.
+
+**Next:** Resume T16 publishing, then proceed sequentially through T32 and T34 as requested.

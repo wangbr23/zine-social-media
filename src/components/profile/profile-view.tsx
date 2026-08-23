@@ -1,7 +1,9 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { DeleteDraftButton } from "@/components/zines/delete-draft-button";
 import type { DatabaseUser } from "@/lib/auth/user";
+import type { DeleteDraftResult } from "@/lib/zines/draft-actions";
 
 type ProfileZine = {
   id: string;
@@ -20,6 +22,7 @@ type ProfileViewProps = {
   isOwner: boolean;
   toggleAction?: (formData: FormData) => Promise<void>;
   followControl?: ReactNode;
+  deleteDraftAction?: (zineId: string) => Promise<DeleteDraftResult>;
 };
 
 export function ProfileView({
@@ -29,6 +32,7 @@ export function ProfileView({
   isOwner,
   toggleAction,
   followControl,
+  deleteDraftAction,
 }: ProfileViewProps) {
   const profilePath = isOwner ? "/profile" : `/magazine/${profile.handle}`;
 
@@ -146,12 +150,21 @@ export function ProfileView({
             return (
               <article className="bg-white p-5" key={zine.id}>
                 {zine.status === "draft" ? (
-                  <Link
-                    className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--editorial-blue)]"
-                    href={`/create/${zine.id}`}
-                  >
-                    {card}
-                  </Link>
+                  <>
+                    <Link
+                      className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--editorial-blue)]"
+                      href={`/create/${zine.id}`}
+                    >
+                      {card}
+                    </Link>
+                    {deleteDraftAction ? (
+                      <DeleteDraftButton
+                        action={deleteDraftAction.bind(null, zine.id)}
+                        className="editorial-text-link mt-4 text-sm font-bold text-red-700 disabled:opacity-50"
+                        title={zine.title}
+                      />
+                    ) : null}
+                  </>
                 ) : (
                   card
                 )}

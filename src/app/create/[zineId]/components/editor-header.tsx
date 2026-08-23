@@ -9,6 +9,7 @@ type EditorHeaderProps = {
   message: string | null;
   saveDisabled: boolean;
   onExit: (event: MouseEvent<HTMLAnchorElement>) => void;
+  onDeleteDraft: () => void;
   onSave: () => void;
 };
 
@@ -18,6 +19,7 @@ export function EditorHeader({
   message,
   saveDisabled,
   onExit,
+  onDeleteDraft,
   onSave,
 }: EditorHeaderProps) {
   return (
@@ -39,6 +41,14 @@ export function EditorHeader({
         >
           Exit
         </Link>
+        <button
+          className="editorial-text-link text-sm font-bold text-red-700 disabled:opacity-50"
+          disabled={saveDisabled}
+          onClick={onDeleteDraft}
+          type="button"
+        >
+          Delete draft
+        </button>
         <button
           className="editorial-button bg-black px-5 py-3 text-sm font-bold uppercase text-white disabled:opacity-50"
           disabled={saveDisabled}
