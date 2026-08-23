@@ -67,3 +67,33 @@ While preparing `.env.local` for T9 (adding empty placeholder lines for the Cler
 Fixed the file corruption (inserted the missing newline; `DATABASE_URL`/`DATABASE_URL_UNPOOLED` values themselves are intact). Added `T23` to rotate the exposed Neon password — treat it as compromised since it's now in session history, not just a formatting fix.
 
 **Next:** T23 (rotate DB password) before or alongside T9 (Clerk/Blob keys).
+
+## 2026-08-22 — Wired Clerk and secure Blob upload tokens
+
+Completed T10 and T11 in parallel after T9. Clerk now wraps the App Router with `ClerkProvider`, runs `clerkMiddleware` through Next.js 16's `src/proxy.ts`, and exposes catch-all `/sign-in` and `/sign-up` routes. Routes remain public by default so authorization can be enforced close to protected pages, data, and actions as those features are added.
+
+Added `/api/zine-page-images/upload` for Vercel Blob client uploads. It authenticates token requests with Clerk, scopes pathnames to `zine-pages/<clerkUserId>/`, accepts JPEG/PNG/WebP/AVIF images up to 10 MiB, creates short-lived tokens, adds random suffixes, and disables overwrites. The Blob read/write token remains server-only, and unexpected SDK errors are not returned verbatim.
+
+Both implementations passed their individual TypeScript and targeted ESLint checks; the Clerk work also passed a webpack production build. A combined validation invocation stalled in the previously documented local Node/dependency environment and was stopped without producing a diagnostic.
+
+**Next:** Resolve the T12/T13 boundary by creating the `users` row during onboarding (or otherwise satisfying required handle/display-name fields), then implement authenticated user onboarding.
+
+## 2026-08-22 — Implemented session resolution and onboarding
+
+Rewrote and completed T12/T13 around the agreed lifecycle. Authenticated Clerk sessions are resolved against the Neon `users` table. A signed-in person without a row is redirected from the application entry point to `/onboarding`; signed-out visitors see a minimal landing page with Clerk sign-in/sign-up controls.
+
+Onboarding prefills Clerk profile information, validates the required display name and normalized handle, checks handle availability for helpful feedback, and atomically inserts a complete user row using server-trusted Clerk identity, primary email, and avatar. Database uniqueness remains the final race-safe authority. Existing users cannot repeat onboarding. The Blob token endpoint now also requires an existing database user, preventing pre-onboarding accounts from using protected application functionality.
+
+`npm run typecheck` passes and `git diff --check` is clean. ESLint and the webpack build failed before examining/compiling project code because installed dependency modules again returned inconsistent exports (`eslint-plugin-react` and Next's compiled Edge runtime); this is the same local `node_modules` issue documented previously.
+
+**Next:** T14, T18, and T22 are now unblocked. The most direct core-flow step is T14: create new draft zines.
+
+## 2026-08-22 — Applied the mock-inspired editorial UI system
+
+Reviewed the three Desktop references (`zine1.JPG`, `zine2.JPG`, `zine3.JPG`) and translated their shared visual language into reusable components and global styles: oversized condensed red mastheads, black rules, blue link accents, editorial serif copy, square controls, generous white space, and the gray icon navigation used in the authenticated product.
+
+Restyled the public landing page, Clerk sign-in/sign-up surfaces, onboarding, and the initial signed-in profile state. After review, removed the mobile-device-width frame so the design fills the viewport responsively, with constrained reading columns only where useful. The bottom navigation now renders only for fully signed-in/onboarded application users; it is absent from the public landing, sign-in, sign-up, and onboarding screens.
+
+`npm run typecheck` and `git diff --check` pass.
+
+**Next:** Continue the same editorial system while implementing T14, then turn the placeholder authenticated navigation into real routes during T22.

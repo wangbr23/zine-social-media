@@ -61,3 +61,13 @@ Append-only log of architecture decisions. One entry per decision, newest at the
 **Decision:** Lazy upsert on first authenticated request. A webhook requires a public endpoint plus signature verification — real infrastructure this product doesn't otherwise need in v1, for a one-time per-user event that a lazy check handles just as correctly.
 
 **Consequences:** No webhook endpoint or Clerk webhook-secret configuration needed. The first authenticated request from a new user pays one extra existence-check/insert. This also has to be where the handle/display-name onboarding step (T13) hooks in, since the row won't have a valid `handle` yet on creation.
+
+## 2026-08-22 — Create the database user during onboarding
+
+**Status:** Accepted; refines the proposed lazy-upsert decision above.
+
+**Context:** Clerk provides identity and email but not the app's required, unique handle. The database also requires a display name. Creating a `users` row on the first authenticated request would therefore require nullable fields or a fake temporary handle before onboarding.
+
+**Decision:** Resolve each Clerk session against `users`. If no row exists, send document requests to `/onboarding`. Onboarding collects and validates the handle and display name, then atomically inserts the complete row using Clerk's server-side identity and email. API actions require both an authenticated Clerk session and an existing database user.
+
+**Consequences:** User rows are never incomplete, handle claims remain protected by the database uniqueness constraint, and no webhook is needed for v1. Every new authenticated user must finish onboarding before using protected application features.

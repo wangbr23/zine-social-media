@@ -12,12 +12,12 @@ Task format: `- [ ] \`T<n>\` <description> — <manual|agent>[, depends-on: T<a>
 - [x] `T6` Provision Clerk — manual, depends-on: T3 — connected through Vercel
 - [x] `T7` Design the data model (users, zines, pages, follows w/ pending state, likes, comments) and set up Drizzle schema + migrations — agent, depends-on: T4 — initial migration applied to Neon
 - [x] `T8` Fill in AGENTS.md's Commands section (install/dev/test/lint/build) — agent, depends-on: T3
-- [ ] `T23` Rotate the Neon database password — manual, URGENT — the connection string was accidentally exposed in an agent session transcript while diagnosing an unrelated `.env.local` formatting bug; reset it via Vercel/Neon dashboard and update `DATABASE_URL`/`DATABASE_URL_UNPOOLED` in `.env.local`
-- [ ] `T9` Get Clerk + Vercel Blob environment variables from the Vercel dashboard (Project → Settings → Environment Variables) into `.env.local` — manual — T5/T6 are provisioned on Vercel but never pulled locally; no CLI needed, just copy the values. `.env.local` already has empty `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` / `BLOB_READ_WRITE_TOKEN` lines ready to fill in
-- [ ] `T10` Install `@clerk/nextjs`, add `clerkMiddleware`, `<ClerkProvider>`, and sign-in/sign-up routes — agent, depends-on: T9
-- [ ] `T11` Install `@vercel/blob`, add a token-based client upload route for page images — agent, depends-on: T9
-- [ ] `T12` Sync a Clerk session to a `users` row — lazy upsert on first authenticated request (see note above re: webhook alternative) — agent, depends-on: T10
-- [ ] `T13` Onboarding step for new users: choose a `handle`, confirm/edit `displayName` before they can do anything else — agent, depends-on: T12
+- [x] `T23` Rotate the Neon database password — manual — done
+- [x] `T9` Get Clerk + Vercel Blob environment variables from the Vercel dashboard into `.env.local` — manual — done, all 5 keys verified present
+- [x] `T10` Install `@clerk/nextjs`, add `clerkMiddleware`, `<ClerkProvider>`, and sign-in/sign-up routes — agent, depends-on: T9 — implemented with Next.js 16 `src/proxy.ts`
+- [x] `T11` Install `@vercel/blob`, add a token-based client upload route for page images — agent, depends-on: T9 — authenticated, user-scoped image upload tokens
+- [x] `T12` Resolve the Clerk session to an existing `users` row; authenticated users without one must be sent to onboarding — agent, depends-on: T10
+- [x] `T13` Onboarding for new Clerk users: choose a unique `handle`, confirm/edit `displayName`, and atomically create the complete `users` row — agent, depends-on: T12
 - [ ] `T14` Zine creation flow — new draft `zines` row (title, aspect ratio, starter template or blank canvas) — agent, depends-on: T13
 - [ ] `T15` Page editor UI — text/image/background blocks, writes `pages.blocks` jsonb — agent, depends-on: T14, T11
 - [ ] `T16` Publish flow — lock a zine (`status: published`, set `publishedAt`, require ≥1 page) — agent, depends-on: T15
