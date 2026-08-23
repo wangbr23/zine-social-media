@@ -74,9 +74,15 @@ export async function createZine(
       aspectRatio,
       templateKey: template.key,
     });
-  } catch {
+  } catch (error) {
+    const errorId = crypto.randomUUID();
+
+    console.error("Draft creation failed", { errorId, error });
+
     return {
-      errors: { form: "We could not create your draft. Please try again." },
+      errors: {
+        form: `We could not create your draft. Please try again. Reference: ${errorId}`,
+      },
       values: { title, aspectRatio: aspectRatio.key, template: template.key },
     };
   }

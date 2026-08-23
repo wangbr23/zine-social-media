@@ -34,12 +34,12 @@ export async function createDraftZine(input: {
     const slug = `${baseSlug}-${crypto.randomUUID().replaceAll("-", "").slice(0, 10)}`;
     const result = await db.execute<{ id: string; slug: string }>(sql`
       insert into ${zines} (
-        ${zines.userId},
-        ${zines.title},
-        ${zines.slug},
-        ${zines.aspectWidth},
-        ${zines.aspectHeight},
-        ${zines.templateKey}
+        "user_id",
+        "title",
+        "slug",
+        "aspect_width",
+        "aspect_height",
+        "template_key"
       )
       select
         ${users.id},
@@ -51,7 +51,7 @@ export async function createDraftZine(input: {
       from ${users}
       where ${users.clerkUserId} = ${input.clerkUserId}
       on conflict do nothing
-      returning ${zines.id}, ${zines.slug}
+      returning "id", "slug"
     `);
     const created = result.rows[0];
 

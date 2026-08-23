@@ -109,3 +109,13 @@ Integration review removed a stale duplicate route artifact and separated browse
 Combined validation passes: `npm run typecheck`, targeted ESLint, `git diff --check`, and `npm run build -- --webpack`. The build reports all expected application routes and Proxy middleware.
 
 **Next:** T15 (page editor, now unblocked by T14/T11) and T19 (follow/private approval, now unblocked by T18) can proceed independently.
+
+## 2026-08-22 — Fixed production draft creation diagnostics and SQL
+
+Investigated the generic production failure from the Create Draft action. The two-round-trip optimization used Drizzle column interpolation inside an `INSERT` column list, which qualifies names (for example, `"zines"."user_id"`) where PostgreSQL requires unqualified identifiers. Corrected the insert column and returning lists while keeping all dynamic values parameterized.
+
+The Server Action now logs the original exception in Vercel with a generated error reference and returns only that reference to the browser, preserving useful diagnostics without exposing database details. A non-mutating `EXPLAIN` against Neon confirms the corrected INSERT syntax and query plan are valid and created no row.
+
+Local full typecheck attempts continued to intermittently stall in the previously documented Node/dependency environment, so they were stopped without a diagnostic.
+
+**Next:** Deploy the correction, retry draft creation, and use the displayed reference to find `Draft creation failed` in Vercel logs if another error occurs.
