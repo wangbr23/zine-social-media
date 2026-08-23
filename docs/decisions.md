@@ -41,3 +41,23 @@ Append-only log of architecture decisions. One entry per decision, newest at the
 **Decision:** v1 ships with no content moderation/reporting, no explore/discovery page, no categorization, no standalone posts, and no spread-level browsing. The mocks are kept as the target design for later phases, not built now.
 
 **Consequences:** Discovery is limited to follows + off-platform sharing until an explore page ships — accepted growth-path limitation. No moderation queue means abuse reports have nowhere to go yet; this must be revisited before the user base grows meaningfully, per the design doc's open items.
+
+## 2026-08-22 — User is the sole account and public-profile entity
+
+**Status:** Accepted; supersedes the earlier data-model assumption that users and magazines need separate tables.
+
+**Context:** The v1 product allows exactly one Magazine profile per authenticated user. A separate `magazines` table would therefore create a permanent one-to-one join without representing a distinct v1 entity.
+
+**Decision:** Store Clerk identity and public Magazine profile fields together on `users`. Zines belong to a user, and follows, likes, and comments use user IDs. “Magazine” remains the product-facing name for a user's public profile, not a separate database entity.
+
+**Consequences:** The v1 schema and queries are simpler and contain six domain tables: users, zines, pages, follows, likes, and comments. Supporting multiple magazines per account or collaborative magazine ownership later will require introducing a separate entity and migrating ownership references.
+
+## 2026-08-22 — Sync Clerk to `users` via lazy upsert, not a webhook
+
+**Status:** Proposed — flagged to the user, not yet confirmed.
+
+**Context:** A `users` row needs to exist for a signed-in Clerk identity before it can own zines, follow, like, or comment. Two standard ways to create it: a Clerk webhook (`user.created`) hitting a public endpoint, or a lazy check-and-insert the first time an authenticated request needs the row.
+
+**Decision:** Lazy upsert on first authenticated request. A webhook requires a public endpoint plus signature verification — real infrastructure this product doesn't otherwise need in v1, for a one-time per-user event that a lazy check handles just as correctly.
+
+**Consequences:** No webhook endpoint or Clerk webhook-secret configuration needed. The first authenticated request from a new user pays one extra existence-check/insert. This also has to be where the handle/display-name onboarding step (T13) hooks in, since the row won't have a valid `handle` yet on creation.

@@ -5,7 +5,7 @@ A social platform for creating, publishing, and browsing zines.
 ## Stack
 - Language/runtime: Node.js (Vercel Fluid Compute)
 - Framework: Next.js (App Router), deployed on Vercel
-- Package manager: (undecided — pending project scaffold)
+- Package manager: npm
 - Database: Neon Postgres via Drizzle ORM
 - Image storage: Vercel Blob
 - Auth: Clerk (email/password + Google OAuth)
@@ -13,15 +13,20 @@ A social platform for creating, publishing, and browsing zines.
 See `docs/designs/zine-social-platform.md` for the full product design and `docs/decisions.md` for why each of these was chosen.
 
 ## Commands
-- Install:
-- Dev/run:
-- Test:
-- Lint/typecheck:
-- Build:
+- Install: `npm install` (use `npm ci` for clean/CI installs)
+- Dev/run: `npm run dev`; production server after a build: `npm run start`
+- Test: not configured yet
+- Lint: `npm run lint`
+- Typecheck: `npm run typecheck`
+- Build: `npm run build`
+- Database: `npm run db:generate`, `npm run db:migrate`, `npm run db:studio`
+
+Local development reads integration credentials from `.env.local`. On this machine, Neon/Vercel CLI commands may need `NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem` so Node trusts the system certificate chain; never disable TLS verification.
 
 ## Conventions
+Cross-project coding principles (KISS, no god files, surface conflicts, etc.) live in `~/.claude/CLAUDE.md` — don't restate them here. This section is only for what's specific to *this* repo:
 - Code style:
-- Testing approach:
+- Testing approach: No test framework is configured yet; add the command here when one is chosen.
 - Commit message format:
 
 ## Architecture

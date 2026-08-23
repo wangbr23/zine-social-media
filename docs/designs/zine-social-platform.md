@@ -48,10 +48,13 @@ These came from a competitor-informed mock review (see **Mocks** below) that sho
 | Layer | Choice | Why |
 |---|---|---|
 | Framework | Next.js (App Router) on Vercel, Fluid Compute/Node.js runtime | Handles the interactive editor (client components) and server-rendered reader/feed well; matches this environment's default. |
-| Database | Neon Postgres | Data is genuinely relational — users, magazines, zines, pages, follows (with pending state), likes, comments all reference each other; the feed query is a join. Vercel's preferred managed Postgres. |
+| Database | Neon Postgres | Data is genuinely relational — users (whose public profile is called a Magazine), zines, pages, follows (with pending state), likes, and comments all reference each other; the feed query is a join. Vercel's preferred managed Postgres. |
 | ORM | Drizzle | Stays close to SQL, no heavy codegen/build step (vs. Prisma). |
 | Image storage | Vercel Blob, `access: 'public'` | Published zine page images need to render directly. |
 | Auth | Clerk (Vercel Marketplace native) | Auto-provisioned env vars, prebuilt sign-in/up UI, fits open signup. Email/password + Google OAuth. |
+
+### Architecture — no separate backend
+Next.js App Router serves both sides of the app: UI as Server/Client Components, and "backend" logic as Route Handlers (`app/api/**`) and Server Actions, running as Vercel Functions (Node.js/Fluid Compute). Those talk directly to Neon, Vercel Blob, and Clerk — no separate Express/FastAPI service in front of them. Revisit only if something needs a long-running process a request/response function can't do (e.g. a background worker).
 
 ### Known tradeoff — accepted for v1
 Vercel Blob public URLs are long/unguessable but **not access-controlled**. This means a private magazine's page images are technically reachable by anyone with the exact URL, even though the profile itself is gated behind follow-approval. Accepted as a practical v1 tradeoff (same one most early-stage apps make); flagged to revisit alongside content moderation if private profiles become a serious use case.
