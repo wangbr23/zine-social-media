@@ -1,6 +1,6 @@
 "use client";
 
-import type { PointerEvent } from "react";
+import type { KeyboardEvent, PointerEvent } from "react";
 
 import type { PageBackground, PageBlock } from "@/db/schema";
 import { pageUnitsToCss } from "@/lib/zines/blocks";
@@ -25,6 +25,10 @@ type PageRendererProps = {
    * are laid out here and re-deriving their hit areas elsewhere would duplicate that.
    */
   onBlockPointerDown?: (blockId: string, event: PointerEvent<HTMLElement>) => void;
+  editingTextBlockId?: string | null;
+  onEditText?: (blockId: string) => void;
+  onChangeText?: (blockId: string, text: string) => void;
+  onFinishTextEditing?: () => void;
 };
 
 /**
@@ -42,6 +46,10 @@ export function PageRenderer({
   selectedBlockId,
   onSelectBlock,
   onBlockPointerDown,
+  editingTextBlockId,
+  onEditText,
+  onChangeText,
+  onFinishTextEditing,
 }: PageRendererProps) {
   return (
     <div
@@ -69,19 +77,50 @@ export function PageRenderer({
           );
         }
 
+        const beginTextEditing = () => {
+          onSelectBlock(block.id);
+          if (block.type === "text") onEditText?.(block.id);
+        };
+        const selectFromKeyboard = (event: KeyboardEvent<HTMLDivElement>) => {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
+          beginTextEditing();
+        };
+
         return (
-          <button
+          <div
             aria-label={`Edit ${block.type} block`}
             className={`absolute overflow-hidden border-2 text-left ${onBlockPointerDown ? "cursor-move" : ""} ${block.id === selectedBlockId ? "border-[var(--editorial-blue)]" : "border-transparent hover:border-black/30"}`}
             key={block.id}
-            onClick={() => onSelectBlock(block.id)}
+            onClick={beginTextEditing}
+            onKeyDown={selectFromKeyboard}
             onPointerDown={(event) => onBlockPointerDown?.(block.id, event)}
+            role="button"
             // Dragging a block must not also pan the page under it.
             style={{ ...frame, touchAction: onBlockPointerDown ? "none" : undefined }}
-            type="button"
+            tabIndex={0}
           >
-            <BlockContent block={block} />
-          </button>
+            {block.type === "text" && block.id === editingTextBlockId ? (
+              <textarea
+                aria-label="Edit text"
+                autoFocus
+                className="block h-full w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none"
+                onBlur={onFinishTextEditing}
+                onChange={(event) => onChangeText?.(block.id, event.target.value)}
+                onClick={(event) => event.stopPropagation()}
+                onPointerDown={(event) => event.stopPropagation()}
+                style={{
+                  color: block.color,
+                  fontFamily: block.fontFamily,
+                  fontSize: pageUnitsToCss(block.fontSize),
+                  textAlign: block.textAlign,
+                }}
+                value={block.text}
+              />
+            ) : (
+              <BlockContent block={block} />
+            )}
+          </div>
         );
       })}
     </div>

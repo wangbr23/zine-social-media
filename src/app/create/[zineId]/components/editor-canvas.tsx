@@ -1,6 +1,6 @@
 "use client";
 
-import { type PointerEvent, useRef } from "react";
+import { type PointerEvent, useRef, useState } from "react";
 
 import { PageRenderer } from "@/components/zines/page-renderer";
 import type { PageBlock } from "@/db/schema";
@@ -63,6 +63,7 @@ export function EditorCanvas({
 }: EditorCanvasProps) {
   const surfaceRef = useRef<HTMLDivElement>(null);
   const gestureRef = useRef<Gesture | null>(null);
+  const [editingTextBlockId, setEditingTextBlockId] = useState<string | null>(null);
   const selectedBlock = page?.blocks.find((item) => item.id === selectedBlockId) ?? null;
 
   const startGesture = (
@@ -175,7 +176,11 @@ export function EditorCanvas({
             aspectHeight={aspectHeight}
             aspectWidth={aspectWidth}
             className="w-full shadow-[8px_8px_0_rgba(0,0,0,.18)]"
+            editingTextBlockId={editingTextBlockId}
             onBlockPointerDown={startMove}
+            onChangeText={(blockId, text) => onChangeBlock(blockId, { text })}
+            onEditText={setEditingTextBlockId}
+            onFinishTextEditing={() => setEditingTextBlockId(null)}
             onSelectBlock={onSelectBlock}
             page={page}
             selectedBlockId={selectedBlockId}

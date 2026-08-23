@@ -75,8 +75,20 @@ export async function POST(request: Request): Promise<NextResponse> {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
+    const errorReference = crypto.randomUUID().slice(0, 8);
+    console.error("Blob upload authorization failed", {
+      errorReference,
+      error:
+        error instanceof Error
+          ? { name: error.name, message: error.message, stack: error.stack }
+          : String(error),
+    });
+
     return NextResponse.json(
-      { error: "Unable to authorize upload" },
+      {
+        error: "Unable to authorize upload",
+        errorReference,
+      },
       { status: 400 },
     );
   }
