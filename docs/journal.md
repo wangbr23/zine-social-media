@@ -97,3 +97,15 @@ Restyled the public landing page, Clerk sign-in/sign-up surfaces, onboarding, an
 `npm run typecheck` and `git diff --check` pass.
 
 **Next:** Continue the same editorial system while implementing T14, then turn the placeholder authenticated navigation into real routes during T22.
+
+## 2026-08-22 — Added draft creation, profiles, and app navigation
+
+Completed T14, T18, and T22 in parallel with isolated route ownership, then reviewed and integrated the combined result. Authenticated users can create draft zines with a validated title, fixed portrait/square/landscape ratio, and blank or starter-template choice. Drafts receive readable collision-safe per-user slugs and redirect to an owner-only confirmation route reserved for the T15 editor.
+
+Added owner and public Magazine profile pages. Owners can switch between published Zines and private Drafts and toggle public/private visibility. Public profile queries expose only published zines; private profiles require ownership or an accepted follow relationship. Added real Newsstand/Create/Profile navigation, removed the deferred Library item, preserved the public landing page, and route onboarded users from `/` to `/newsstand`.
+
+Integration review removed a stale duplicate route artifact and separated browser-safe zine option constants from server-only draft creation logic after the production build detected a server module entering the client bundle.
+
+Combined validation passes: `npm run typecheck`, targeted ESLint, `git diff --check`, and `npm run build -- --webpack`. The build reports all expected application routes and Proxy middleware.
+
+**Next:** T15 (page editor, now unblocked by T14/T11) and T19 (follow/private approval, now unblocked by T18) can proceed independently.
