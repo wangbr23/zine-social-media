@@ -35,6 +35,45 @@ export async function canViewPrivateProfile(
   return Boolean(follow);
 }
 
+export async function getFollowStatus(
+  profileUserId: string,
+  viewerUserId?: string,
+) {
+  if (!viewerUserId || profileUserId === viewerUserId) return null;
+
+  const [follow] = await db
+    .select({ status: follows.status })
+    .from(follows)
+    .where(
+      and(
+        eq(follows.followerUserId, viewerUserId),
+        eq(follows.followedUserId, profileUserId),
+      ),
+    )
+    .limit(1);
+
+  return follow?.status ?? null;
+}
+
+export function getPendingFollowRequests(userId: string) {
+  return db
+    .select({
+      id: follows.id,
+      displayName: users.displayName,
+      handle: users.handle,
+      createdAt: follows.createdAt,
+    })
+    .from(follows)
+    .innerJoin(users, eq(users.id, follows.followerUserId))
+    .where(
+      and(
+        eq(follows.followedUserId, userId),
+        eq(follows.status, "pending"),
+      ),
+    )
+    .orderBy(desc(follows.createdAt));
+}
+
 export function getPublishedZines(userId: string) {
   return db
     .select()

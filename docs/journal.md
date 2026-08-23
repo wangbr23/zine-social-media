@@ -119,3 +119,23 @@ The Server Action now logs the original exception in Vercel with a generated err
 Local full typecheck attempts continued to intermittently stall in the previously documented Node/dependency environment, so they were stopped without a diagnostic.
 
 **Next:** Deploy the correction, retry draft creation, and use the displayed reference to find `Draft creation failed` in Vercel logs if another error occurs.
+
+## 2026-08-23 — Added follow relationships and private-profile approvals
+
+Completed T19. Signed-in users can now follow public Magazines immediately, request access to private Magazines, cancel a pending request, and unfollow an accepted Magazine from its profile. Signed-out visitors are directed to sign in before following.
+
+Pending requests are listed prominently on the owner's Profile because v1 intentionally has no notification system. Owners can approve or deny each request; every mutation checks the authenticated database user and scopes approval/denial to requests addressed to that owner. Accepted followers gain access through the existing private-profile authorization query.
+
+`git diff --check` passes. Final TypeScript, lint, and build validation is deferred to the combined T15/T19 integration pass because the concurrent Next.js build generated duplicate `.next/types/* 2.ts` declarations while both agents were active.
+
+**Next:** Complete T15, then validate the combined changes. T16 becomes available after T15; T21 requires both T17 and the now-complete T19.
+
+## 2026-08-23 — Added the page editor
+
+Completed T15. Draft routes now open a responsive multi-page editor instead of the former confirmation placeholder. Creators can add and delete pages, choose color or gradient backgrounds, add and configure text blocks from a curated font list, upload image blocks through the existing authenticated Vercel Blob route, adjust block frames, preview the composed page, and explicitly save each page to the typed `pages.background` and `pages.blocks` JSONB fields.
+
+Every page mutation verifies that the current database user owns an editable draft, and server-side validation bounds stored editor data rather than trusting client JSON. Image uploads retain the existing file type, size, and user-path restrictions.
+
+`npm run typecheck` and `git diff --check` pass. Targeted ESLint again stalled without output in the documented local dependency environment and was stopped. Duplicate generated `.next/types/* 2.ts` files created during concurrent validation were moved to `/tmp` before the successful typecheck.
+
+**Next:** T16 is now unblocked: add the publish flow and lock published zines. T17 can follow once publishing is complete.

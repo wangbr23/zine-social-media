@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import type { DatabaseUser } from "@/lib/auth/user";
 
@@ -18,6 +19,7 @@ type ProfileViewProps = {
   tab: "zines" | "drafts";
   isOwner: boolean;
   toggleAction?: (formData: FormData) => Promise<void>;
+  followControl?: ReactNode;
 };
 
 export function ProfileView({
@@ -26,6 +28,7 @@ export function ProfileView({
   tab,
   isOwner,
   toggleAction,
+  followControl,
 }: ProfileViewProps) {
   const profilePath = isOwner ? "/profile" : `/magazine/${profile.handle}`;
 
@@ -77,7 +80,9 @@ export function ProfileView({
               Currently {profile.visibility}
             </p>
           </form>
-        ) : null}
+        ) : (
+          followControl
+        )}
       </section>
 
       <nav

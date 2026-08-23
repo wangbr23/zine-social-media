@@ -1,12 +1,17 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
+import { FollowButton } from "@/components/profile/follow-button";
 import { ProfileView } from "@/components/profile/profile-view";
 import { getCurrentDatabaseUser } from "@/lib/auth/user";
 import {
   canViewPrivateProfile,
   findProfileByHandle,
+  getFollowStatus,
   getPublishedZines,
 } from "@/lib/profile/queries";
+
+import { toggleFollow } from "./actions";
 
 type PublicProfilePageProps = {
   params: Promise<{ handle: string }>;
@@ -24,6 +29,22 @@ export default async function PublicProfilePage({
   if (!profile) notFound();
 
   const isOwner = viewer?.id === profile.id;
+  const followStatus = await getFollowStatus(profile.id, viewer?.id);
+  const followControl = !isOwner ? (
+    viewer ? (
+      <FollowButton
+        action={toggleFollow.bind(null, profile.id)}
+        status={followStatus}
+      />
+    ) : (
+      <Link
+        className="editorial-button inline-block border border-black bg-black px-5 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white"
+        href="/sign-in"
+      >
+        Sign in to follow
+      </Link>
+    )
+  ) : null;
   const mayView =
     profile.visibility === "public" ||
     (await canViewPrivateProfile(profile.id, viewer?.id));
@@ -43,6 +64,7 @@ export default async function PublicProfilePage({
             This magazine is private. Its issues are available only to accepted
             followers.
           </p>
+          <div className="mt-6 flex justify-center">{followControl}</div>
         </div>
       </main>
     );
@@ -54,6 +76,7 @@ export default async function PublicProfilePage({
     <main className="editorial-shell">
       <ProfileView
         isOwner={isOwner}
+        followControl={followControl}
         profile={profile}
         tab="zines"
         zines={publishedZines}

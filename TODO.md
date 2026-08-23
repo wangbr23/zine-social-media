@@ -19,11 +19,11 @@ Task format: `- [ ] \`T<n>\` <description> — <manual|agent>[, depends-on: T<a>
 - [x] `T12` Resolve the Clerk session to an existing `users` row; authenticated users without one must be sent to onboarding — agent, depends-on: T10
 - [x] `T13` Onboarding for new Clerk users: choose a unique `handle`, confirm/edit `displayName`, and atomically create the complete `users` row — agent, depends-on: T12
 - [x] `T14` Zine creation flow — new draft `zines` row (title, aspect ratio, starter template or blank canvas) — agent, depends-on: T13
-- [ ] `T15` Page editor UI — text/image/background blocks, writes `pages.blocks` jsonb — agent, depends-on: T14, T11
+- [x] `T15` Page editor UI — text/image/background blocks, writes `pages.blocks` jsonb — agent, depends-on: T14, T11
 - [ ] `T16` Publish flow — lock a zine (`status: published`, set `publishedAt`, require ≥1 page) — agent, depends-on: T15
 - [ ] `T17` Zine reader view — public page rendering a zine's pages, page navigation — agent, depends-on: T16
 - [x] `T18` Magazine profile page — own + public view, Zines/Drafts tabs, visibility toggle — agent, depends-on: T13
-- [ ] `T19` Follow/unfollow, including the pending-approval flow for private magazines — agent, depends-on: T18
+- [x] `T19` Follow/unfollow, including the pending-approval flow for private magazines — agent, depends-on: T18
 - [ ] `T20` Likes + comments on the reader view — agent, depends-on: T17
 - [ ] `T21` Newsstand feed — chronological zines from followed users only — agent, depends-on: T19, T17
 - [x] `T22` App shell / bottom nav (Newsstand, Create, Profile) — agent, depends-on: T13
