@@ -227,3 +227,91 @@ Also corrected the editor grid so a growing inspector no longer vertically displ
 Typecheck, targeted ESLint, and `git diff --check` pass.
 
 **Next:** Resume T16 publishing, then proceed sequentially through T32 and T34 as requested.
+
+## 2026-08-23 — Planned code-cleanup audit findings
+
+Ran a whole-repository cleanup audit and, at the user's request, converted every finding except automated-test setup into T38–T44. The work is sequenced around actual file overlap: editor coordination, mutation authorization, the shared font catalog, and documentation can begin together; upload diagnostics and Blob lifecycle follow their respective foundations; type-safety tightening runs last across the settled boundaries.
+
+Updated T16 to depend on the mutation-authorization cleanup so publishing cannot race a separately authorized edit. T32 and T34 now depend on the editor-coordinator cleanup so new creation features do not deepen the current god-file regression.
+
+**Next:** Parallel wave one is T40, T41, T42, and T44. Afterward T38 and T39 can run together, followed by T43. T16, T32, and T34 resume from the cleaned foundations.
+
+## 2026-08-23 — Extracted editor coordination hook
+
+Completed T40 without changing editor behavior. `ZineEditor` is now a small presentation coordinator that connects the existing header, page rail, canvas, palette, inspector, and layers components. Page and block state, dirty-page tracking, keyboard deletion, navigation guards, uploads, persistence, and draft/page commands now live in the focused `useZineEditor` hook.
+
+`npm run typecheck`, targeted ESLint, and `git diff --check` pass.
+
+**Next:** T38 is unblocked. T32 and T34 can resume once the cleanup wave is integrated.
+
+## 2026-08-23 — Made editor authorization atomic with mutations
+
+Completed T41. Removed the editor's separate `ownsDraft` read from add, save, delete, and palette actions. Page mutations now use one writable-CTE statement that first conditionally updates—and therefore locks—the zine only when it belongs to the authenticated database user and is still a draft, then performs the page write from that authorized row. This shared zine-row lock serializes page editing against publication instead of leaving a check-then-write race across different tables. Palette updates enforce owner and draft status directly in their update predicate and treat an empty result as unauthorized or no longer editable.
+
+`npm run typecheck`, targeted ESLint on the editor actions, and `git diff --check` pass.
+
+**Next:** T16 publishing and T39 Blob lifecycle work are now unblocked by the mutation-authorization cleanup.
+
+## 2026-08-23 — Unified the curated font catalog
+
+Completed T42. Added one browser-safe font catalog that derives the `CuratedFontFamily` union, default font, inspector option metadata, and runtime membership guard from the same readonly values. New text blocks use the shared default; starter-template specifications must use the derived union; the inspector renders the catalog and narrows changes through its guard; and page-save validation now rejects fonts outside the curated set instead of accepting any string.
+
+`npm run typecheck`, targeted ESLint across the font catalog and all consumers, and `git diff --check` pass.
+
+**Next:** T43 can consume the stronger font boundary once T38–T41 are all complete. T16 and creation-experience work can use the catalog without duplicating font literals or validation rules.
+
+## 2026-08-23 — Replaced repository scaffolding documentation
+
+Completed T44. Replaced the Create Next App README with project-specific product, local setup, environment, command, and context documentation. Filled the previously empty AGENTS.md conventions and architecture sections from the current App Router, Clerk, Neon/Drizzle, Blob, and editor boundaries. Updated the product design's aspirational “4-6” starter count to the implemented v1 scope: The Dispatch, Photo Essay, or a blank canvas.
+
+Removed the five unreferenced Create Next App SVGs from `public/`; the application has no remaining dependency on those starter assets.
+
+Read-only reference searches and `git diff --check` pass. No application code changed.
+
+**Next:** Continue the cleanup wave with T40, T41, and T42. T16, T32, and T34 remain available from the product backlog.
+
+Coordination update: T41 completed concurrently before this documentation pass finished. The remaining first-wave tasks are T40 and T42; T38 and T39 follow their respective dependencies.
+
+## 2026-08-23 — Integrated cleanup Wave 1
+
+Reviewed T40, T41, T42, and T44 together. The editor is now an 80-line presentation coordinator backed by a dedicated state/command hook; editor mutations serialize on the owned draft row so publishing cannot race a separately authorized page write; curated fonts have one typed client/server source of truth; and the repository documentation and starter scaffolding reflect the actual application.
+
+The combined `npm run typecheck`, full `npm run lint`, `git diff --check`, and `npm run build -- --webpack` pass. The production build reports all expected routes.
+
+**Next:** T38 and T39 are the parallel-ready Wave 2 tasks. T43 follows their integration, then T16/T32/T34 can resume from the cleaned foundations.
+
+## 2026-08-23 — Added accurate image-upload errors
+
+Completed T38. Page-image type and 10 MiB limits now come from one browser-safe policy shared by client validation and server token constraints. The client obtains its upload token explicitly so it can distinguish an expired session from an unavailable authorization endpoint before sending the file to Blob. The editor now reports separate messages for unsupported types, excessive size, authentication, service availability, network loss, and a rejected Blob upload.
+
+The authorization route returns stable, nonsensitive error codes and HTTP statuses; internal exceptions and configuration details remain server-side. `npm run typecheck`, targeted ESLint, and `git diff --check` pass.
+
+**Next:** Complete T39, then run T43 across the settled cleanup boundaries.
+
+## 2026-08-23 — Added safe page-image Blob cleanup
+
+Completed T39 without adding schema or migration state. Saving a page now captures its previous image blocks within the same authorized mutation, while page and draft deletion return or collect the image URLs they remove. After the database response, those candidates enter a best-effort Vercel Blob cleanup that only accepts URLs under the authenticated owner's `zine-pages/<clerkUserId>/` prefix and checks every surviving page block plus zine cover reference before deleting. Reused URLs therefore stay alive.
+
+The same cleanup pass lists that owner's uploads and removes unreferenced files older than 24 hours, covering images uploaded and then removed or abandoned before a save without racing an upload still in progress. Blob listing and each deletion are failure-tolerant and logged server-side; a storage outage never changes a successful database mutation into a misleading editor error, and a later editor mutation retries the abandoned-file sweep.
+
+`npm run typecheck`, targeted ESLint across the lifecycle helper and affected actions, and `git diff --check` pass. No database migration was needed or applied.
+
+**Next:** T43 is now unblocked across the completed cleanup work. T16 publishing can proceed with atomic editor locking and storage cleanup in place.
+
+## 2026-08-23 — Integrated cleanup Wave 2
+
+Reviewed T38 and T39 together. The explicit client-token request matches the installed Vercel Blob SDK protocol, and its stable failure categories compose with the shared upload policy. Blob cleanup remains secondary to database success, restricts deletion to the authenticated owner's page-image prefix, and verifies global surviving references before removal; no schema migration was introduced.
+
+The combined `npm run typecheck`, full `npm run lint`, `git diff --check`, and `npm run build -- --webpack` pass. The production build reports all expected routes.
+
+**Next:** T43 is the final cleanup wave. Afterward T16 publishing can resume, followed by T32 and T34 in the requested sequential order.
+
+## 2026-08-23 — Completed cleanup Wave 3 type safety
+
+Completed T43. `ZinePalette` is now an exact five-color tuple across Drizzle, template defaults, editor state, and palette context; palette construction passes through the existing runtime validator before entering that type. Replaced the editor's broad `Partial<PageBlock>` merge and cast with a shared patch type and discriminated application helper, so text-only and image-only state is preserved intentionally.
+
+Removed the page-creation non-null assertion, create-form fallback casts, server block-validation assertions, and select-input casts. Server Action result types now distinguish page-returning mutations from deletion, and browser context usage fails explicitly when mounted outside its provider instead of silently returning an empty palette.
+
+`npm run typecheck`, full `npm run lint`, `git diff --check`, and `npm run build -- --webpack` pass. The production build reports all expected routes.
+
+**Next:** The cleanup audit is complete. Resume T16 publishing, then T32 and T34 sequentially as requested.

@@ -1,6 +1,7 @@
 "use client";
 
 import type { PageBackground, PageBlock } from "@/db/schema";
+import type { PageBlockPatch } from "@/lib/zines/blocks";
 import { PAGE_IMAGE_ACCEPT } from "@/lib/zines/page-images";
 
 import { BackgroundEditor } from "./background-editor";
@@ -13,7 +14,7 @@ type InspectorPanelProps = {
   onAddText: () => void;
   onAddImage: (file: File | undefined) => void;
   onChangeBackground: (value: PageBackground) => void;
-  onChangeBlock: (value: Partial<PageBlock>) => void;
+  onChangeBlock: (value: PageBlockPatch) => void;
   onDeleteBlock: () => void;
 };
 

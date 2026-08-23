@@ -55,12 +55,14 @@ export async function createZine(
   }
 
   if (Object.keys(errors).length > 0 || !aspectRatio || !template) {
+    const fallbackAspectRatio: ZineAspectRatioKey = "portrait";
+    const fallbackTemplate: ZineTemplateKey = "blank";
     return {
       errors,
       values: {
         title,
-        aspectRatio: (aspectRatio?.key ?? "portrait") as ZineAspectRatioKey,
-        template: (template?.key ?? "blank") as ZineTemplateKey,
+        aspectRatio: aspectRatio?.key ?? fallbackAspectRatio,
+        template: template?.key ?? fallbackTemplate,
       },
     };
   }

@@ -6,6 +6,7 @@ import {
   MIN_FONT_SIZE_UNITS,
   PAGE_WIDTH_UNITS,
 } from "@/lib/zines/blocks";
+import type { CuratedFontFamily } from "@/lib/zines/fonts";
 import type { ZineTemplateKey } from "@/lib/zines/options";
 
 export type TemplatePage = {
@@ -22,8 +23,8 @@ type TextSpec = {
   text: string;
   /** Page-unit font size as a multiple of the editor's default text size. */
   fontScale: number;
-  /** From the editor's curated font list (`fonts` in the block editor). */
-  fontFamily: "Georgia" | "Arial" | "Courier New" | "Impact";
+  /** From the editor's curated font catalog. */
+  fontFamily: CuratedFontFamily;
   color: string;
   /** Expected wrapped line count, used to reserve vertical room in the frame. */
   lines: number;

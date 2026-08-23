@@ -7,16 +7,20 @@ import {
   MAX_FONT_SIZE_UNITS,
   MIN_BLOCK_POSITION_PERCENT,
   MIN_FONT_SIZE_UNITS,
+  type PageBlockPatch,
 } from "@/lib/zines/blocks";
+import {
+  CURATED_FONTS,
+  isCuratedFontFamily,
+} from "@/lib/zines/fonts";
 
 import { ColorSwatches } from "./color-swatches";
 
-const fonts = ["Georgia", "Arial", "Courier New", "Impact"];
 const frameFields = ["x", "y", "width", "height"] as const;
 
 type BlockEditorProps = {
   block: PageBlock;
-  onChange: (value: Partial<PageBlock>) => void;
+  onChange: (value: PageBlockPatch) => void;
   onDelete: () => void;
 };
 
@@ -38,11 +42,15 @@ export function BlockEditor({ block, onChange, onDelete }: BlockEditorProps) {
             Font
             <select
               className="mt-1 w-full border border-black p-2 font-normal normal-case"
-              onChange={(event) => onChange({ fontFamily: event.target.value })}
+              onChange={(event) => {
+                if (isCuratedFontFamily(event.target.value)) {
+                  onChange({ fontFamily: event.target.value });
+                }
+              }}
               value={block.fontFamily}
             >
-              {fonts.map((font) => (
-                <option key={font}>{font}</option>
+              {CURATED_FONTS.map(({ family, label }) => (
+                <option key={family} value={family}>{label}</option>
               ))}
             </select>
           </label>
@@ -80,11 +88,16 @@ export function BlockEditor({ block, onChange, onDelete }: BlockEditorProps) {
             Alignment
             <select
               className="mt-1 w-full border border-black p-2 font-normal normal-case"
-              onChange={(event) =>
-                onChange({
-                  textAlign: event.target.value as "left" | "center" | "right",
-                })
-              }
+              onChange={(event) => {
+                const alignment = event.target.value;
+                if (
+                  alignment === "left" ||
+                  alignment === "center" ||
+                  alignment === "right"
+                ) {
+                  onChange({ textAlign: alignment });
+                }
+              }}
               value={block.textAlign}
             >
               <option value="left">Left</option>
@@ -107,9 +120,12 @@ export function BlockEditor({ block, onChange, onDelete }: BlockEditorProps) {
             Fit
             <select
               className="mt-1 w-full border border-black p-2"
-              onChange={(event) =>
-                onChange({ objectFit: event.target.value as "cover" | "contain" })
-              }
+              onChange={(event) => {
+                const objectFit = event.target.value;
+                if (objectFit === "cover" || objectFit === "contain") {
+                  onChange({ objectFit });
+                }
+              }}
               value={block.objectFit}
             >
               <option value="cover">Fill frame</option>

@@ -3,7 +3,7 @@
 import { type PointerEvent, useRef, useState } from "react";
 
 import { PageRenderer } from "@/components/zines/page-renderer";
-import type { PageBlock } from "@/db/schema";
+import type { PageBlockPatch } from "@/lib/zines/blocks";
 
 import type { EditorPage } from "../actions";
 import {
@@ -25,7 +25,7 @@ type EditorCanvasProps = {
   aspectHeight: number;
   selectedBlockId: string | null;
   onSelectBlock: (blockId: string) => void;
-  onChangeBlock: (blockId: string, values: Partial<PageBlock>) => void;
+  onChangeBlock: (blockId: string, values: PageBlockPatch) => void;
   onAddPage: () => void;
 };
 

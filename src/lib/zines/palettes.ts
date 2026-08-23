@@ -22,3 +22,8 @@ export function isZinePalette(value: unknown): value is ZinePalette {
     )
   );
 }
+
+export function zinePaletteFrom(colors: Iterable<string>): ZinePalette | null {
+  const palette = [...new Set(colors)].slice(0, PALETTE_SIZE);
+  return isZinePalette(palette) ? palette : null;
+}

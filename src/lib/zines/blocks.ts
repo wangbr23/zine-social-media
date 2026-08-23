@@ -1,4 +1,8 @@
-import type { ImageBlock, TextBlock } from "@/db/schema";
+import type { ImageBlock, PageBlock, TextBlock } from "@/db/schema";
+import {
+  DEFAULT_FONT_FAMILY,
+  type CuratedFontFamily,
+} from "@/lib/zines/fonts";
 
 /**
  * Page geometry is authored against a page of this fixed width, never in CSS pixels,
@@ -22,6 +26,46 @@ export const MIN_BLOCK_POSITION_PERCENT = -100;
 export const MAX_BLOCK_POSITION_PERCENT = 200;
 export const MAX_BLOCK_SIZE_PERCENT = 300;
 
+export type PageBlockPatch = Partial<
+  Omit<TextBlock, "id" | "type" | "fontFamily">
+> &
+  Partial<Omit<ImageBlock, "id" | "type">> & {
+    fontFamily?: CuratedFontFamily;
+  };
+
+export function applyPageBlockPatch(
+  block: PageBlock,
+  patch: PageBlockPatch,
+): PageBlock {
+  const frame = {
+    x: patch.x ?? block.x,
+    y: patch.y ?? block.y,
+    width: patch.width ?? block.width,
+    height: patch.height ?? block.height,
+    rotation: patch.rotation ?? block.rotation,
+  };
+
+  if (block.type === "text") {
+    return {
+      ...block,
+      ...frame,
+      text: patch.text ?? block.text,
+      fontFamily: patch.fontFamily ?? block.fontFamily,
+      fontSize: patch.fontSize ?? block.fontSize,
+      color: patch.color ?? block.color,
+      textAlign: patch.textAlign ?? block.textAlign,
+    };
+  }
+
+  return {
+    ...block,
+    ...frame,
+    url: patch.url ?? block.url,
+    alt: patch.alt ?? block.alt,
+    objectFit: patch.objectFit ?? block.objectFit,
+  };
+}
+
 /**
  * Converts a page-unit length to a CSS length relative to the rendered page width.
  * Only valid inside the page surface, which `PageRenderer` declares as an inline-size
@@ -41,7 +85,7 @@ export function createTextBlock(): TextBlock {
     height: 20,
     rotation: 0,
     text: "Write something worth keeping.",
-    fontFamily: "Georgia",
+    fontFamily: DEFAULT_FONT_FAMILY,
     fontSize: DEFAULT_FONT_SIZE_UNITS,
     color: "#111111",
     textAlign: "left",

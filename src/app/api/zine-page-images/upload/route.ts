@@ -3,14 +3,11 @@ import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
 
 import { findUserByClerkId } from "@/lib/auth/user";
+import {
+  MAXIMUM_PAGE_IMAGE_SIZE_BYTES,
+  PAGE_IMAGE_CONTENT_TYPES,
+} from "@/lib/zines/page-image-policy";
 
-const ALLOWED_CONTENT_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/avif",
-];
-const MAXIMUM_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
 const CLIENT_TOKEN_LIFETIME_MS = 10 * 60 * 1000;
 const SAFE_IMAGE_FILENAME =
   /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,119}\.(?:avif|jpe?g|png|webp)$/i;
@@ -55,8 +52,8 @@ export async function POST(request: Request): Promise<NextResponse> {
         }
 
         return {
-          allowedContentTypes: ALLOWED_CONTENT_TYPES,
-          maximumSizeInBytes: MAXIMUM_IMAGE_SIZE_BYTES,
+          allowedContentTypes: [...PAGE_IMAGE_CONTENT_TYPES],
+          maximumSizeInBytes: MAXIMUM_PAGE_IMAGE_SIZE_BYTES,
           addRandomSuffix: true,
           allowOverwrite: false,
           validUntil: Date.now() + CLIENT_TOKEN_LIFETIME_MS,
@@ -68,16 +65,16 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json(response);
   } catch (error) {
     if (error instanceof UnauthorizedUploadError) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
 
     if (error instanceof InvalidUploadPathError) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ error: "invalid_upload_path" }, { status: 400 });
     }
 
     return NextResponse.json(
-      { error: "Unable to authorize upload" },
-      { status: 400 },
+      { error: "upload_unavailable" },
+      { status: 503 },
     );
   }
 }

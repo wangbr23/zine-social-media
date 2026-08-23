@@ -1,6 +1,8 @@
 "use client";
 
-export function PalettePanel({ palette }: { palette: string[] }) {
+import type { ZinePalette } from "@/db/schema";
+
+export function PalettePanel({ palette }: { palette: ZinePalette }) {
   return (
     <section className="border border-black bg-white p-5">
       <div className="flex items-baseline justify-between gap-3">

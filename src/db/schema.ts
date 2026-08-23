@@ -29,7 +29,7 @@ export type PageBackground = {
   value: string;
 };
 
-export type ZinePalette = string[];
+export type ZinePalette = [string, string, string, string, string];
 
 export type TextBlock = {
   id: string;
