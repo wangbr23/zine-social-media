@@ -6,6 +6,13 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { pages, zines, type PageBackground, type PageBlock } from "@/db/schema";
 import { requireCurrentDatabaseUser } from "@/lib/auth/user";
+import {
+  MAX_BLOCK_POSITION_PERCENT,
+  MAX_BLOCK_SIZE_PERCENT,
+  MAX_FONT_SIZE_UNITS,
+  MIN_BLOCK_POSITION_PERCENT,
+  MIN_FONT_SIZE_UNITS,
+} from "@/lib/zines/blocks";
 
 export type EditorPage = { id: string; pageNumber: number; background: PageBackground; blocks: PageBlock[] };
 export type EditorResult = { ok: true; page?: EditorPage } | { ok: false; error: string };
@@ -21,12 +28,33 @@ function validBackground(value: unknown): value is PageBackground {
   return (item.type === "color" || item.type === "gradient") && typeof item.value === "string" && item.value.length > 0 && item.value.length <= 300;
 }
 
+function isNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+/**
+ * A frame is allowed to extend past the page edge — that's how a full bleed is authored,
+ * and `PageRenderer` clips the overflow — so this only rejects frames far enough outside
+ * the page to be nonsense rather than art.
+ */
+function validFrame(item: Partial<PageBlock>) {
+  const positions = [item.x, item.y];
+  const sizes = [item.width, item.height];
+  if (![...positions, ...sizes, item.rotation].every(isNumber)) return false;
+  return (
+    positions.every(
+      (value) =>
+        value! >= MIN_BLOCK_POSITION_PERCENT &&
+        value! <= MAX_BLOCK_POSITION_PERCENT,
+    ) && sizes.every((value) => value! > 0 && value! <= MAX_BLOCK_SIZE_PERCENT)
+  );
+}
+
 function validBlock(value: unknown): value is PageBlock {
   if (!value || typeof value !== "object") return false;
   const item = value as Partial<PageBlock>;
-  const numbers = [item.x, item.y, item.width, item.height, item.rotation];
-  if (typeof item.id !== "string" || !numbers.every((number) => typeof number === "number" && Number.isFinite(number)) || item.x! < 0 || item.y! < 0 || item.width! <= 0 || item.height! <= 0 || item.x! + item.width! > 100 || item.y! + item.height! > 100) return false;
-  if (item.type === "text") return typeof item.text === "string" && item.text.length <= 5000 && typeof item.fontFamily === "string" && typeof item.fontSize === "number" && item.fontSize >= 8 && item.fontSize <= 200 && typeof item.color === "string" && ["left", "center", "right"].includes(item.textAlign!);
+  if (typeof item.id !== "string" || !validFrame(item)) return false;
+  if (item.type === "text") return typeof item.text === "string" && item.text.length <= 5000 && typeof item.fontFamily === "string" && typeof item.fontSize === "number" && item.fontSize >= MIN_FONT_SIZE_UNITS && item.fontSize <= MAX_FONT_SIZE_UNITS && typeof item.color === "string" && ["left", "center", "right"].includes(item.textAlign!);
   if (item.type === "image") return typeof item.url === "string" && item.url.startsWith("https://") && typeof item.alt === "string" && item.alt.length <= 500 && (item.objectFit === "cover" || item.objectFit === "contain");
   return false;
 }

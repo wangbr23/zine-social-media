@@ -151,3 +151,43 @@ The user chose to implement the near-term and differentiating tiers and defer th
 Added `T24`–`T36` to `TODO.md` under "Creation experience overhaul," sequenced so that decomposing the current `zine-editor.tsx` god-file (`T24`) and fixing its coordinate system (`T25`) gate direct manipulation and everything downstream, while profile-page draft linking (`T30`) has no dependency on the editor at all.
 
 **Next:** `T24` and `T30` are the current agent-ready frontier — dispatching both.
+
+## 2026-08-23 — Landed T24 and T30
+
+Both agents finished the actual work quickly but then sat "running" for a long time — each was blocked on its own `npm run build -- --webpack` validation step, and running two production builds concurrently against the same `.next` output contended with each other. Stopped both tasks once this was diagnosed; the code changes themselves were already complete and untouched by the stop. Ran one clean `rm -rf .next && npm run build -- --webpack` sequentially afterward — passed clean, all 10 routes present. The user had also committed the working tree directly in the meantime (`a04cfe1`, "refine magazine creator").
+
+Reviewed both diffs by hand before marking done. `T24`: `zine-editor.tsx` now only owns state/handlers, composing `EditorHeader`, `PageRail`, `EditorCanvas`, `InspectorPanel`; the new `src/components/zines/page-renderer.tsx` is a genuinely shared `PageRenderer` (interactive when given `onSelectBlock`, static otherwise) built for reuse by thumbnails and the eventual reader view; block-creation logic moved to `src/lib/zines/blocks.ts` and `src/lib/zines/page-images.ts`. No behavior was dropped. `T30`: draft cards on the profile page now link to `/create/{id}`; published cards were left alone since they weren't broken.
+
+**Lesson carried forward from the earlier concurrent-`npm install` conflict:** two agents each independently running a full production build is the same class of resource conflict as two agents running `npm install` — it doesn't corrupt anything, but it stalls both. Validation builds for parallel dispatches should run once, centrally, after each round rather than once per agent.
+
+**Next:** `T25` (coordinate system fix) and `T31` (unsaved-changes warning) are now agent-ready — both depend only on `T24`. Dispatching both, with each told to run `npm run typecheck` only and skip the full build, which will be run centrally afterward.
+
+## 2026-08-23 — Landed T25 and T31
+
+Both finished cleanly with zero file overlap despite running concurrently — confirmed via `git status` before touching anything further. `T25`: pages are now authored against a fixed 1000-unit-wide page, converted to CSS via container-query units (`cqw`) at render time, so a page renders identically regardless of the pixel width it's drawn at (editor, future thumbnail, future reader). No JS measurement or `ResizeObserver` needed. Font-size bounds now live once in `src/lib/zines/blocks.ts` and are imported by both the client input and the server validator, so they can't drift apart again.
+
+`T31`: the implementer caught that the task description was slightly wrong — switching pages doesn't actually discard edits (they persist in memory), only exiting or closing the tab does. Rather than a single dirty boolean (which would have reintroduced a real bug: switch pages, boolean clears, exit with the first page's edits still unsaved and silently lost), it tracks a set of dirty page ids. Agreed with the deviation after reviewing the diff — it's the correct fix, not scope creep.
+
+Reviewed both diffs by hand, then ran one combined `npm run typecheck` and one combined `rm -rf .next && npm run build -- --webpack` centrally — both clean, all 10 routes present.
+
+**Next:** `T26` (direct manipulation) and `T28` (real starter templates) are now agent-ready — both depend only on `T25`. Dispatching both.
+
+## 2026-08-23 — Landed T26 and T28
+
+Both finished with zero file overlap. `T26`: drag/resize/rotate on the canvas via plain pointer events (no drag/canvas library added) — `src/app/create/[zineId]/block-transform.ts` holds pure geometry (resize is rotation-aware: pointer delta is rotated into the block's local axes so a handle on a rotated block still resizes along the edge it visually sits on), `selection-overlay.tsx` draws the 8 resize handles plus a rotate knob, and `editor-canvas.tsx` owns pointer capture with a gesture snapshotted once at pointer-down so nothing accumulates rounding error mid-drag. `PageRenderer` gained one optional prop (`onBlockPointerDown`) that forwards the raw event and nothing else, so it's still a plain presentational component when the prop is omitted — safe for the eventual reader view and thumbnails. The numeric inspector fields stay as the precise fallback, on the same `onChange` path as the drag gestures, per the original design review.
+
+`T28`: `src/lib/zines/templates.ts` seeds `dispatch` and `photo-essay` with a real headline/deck/byline column, distinct background, and fonts drawn from the existing curated list; `blank` stays empty on purpose. Image blocks were deliberately left out of every template — the server validator requires an `https://` URL with no empty state, so a placeholder would be unsavable and a fake external URL would 404; the photo-essay template instead seeds placeholder text pointing at the existing "+ Image" tool. Wired into `createDraftZine` via a data-modifying CTE so a templated draft can never exist without its opening page — same class of raw-SQL construct that caused the earlier "Fixed production draft creation" bug, so this was checked against `PgDialect().sqlToQuery()` before landing.
+
+Reviewed both diffs by hand, ran one combined `npm run typecheck` and one combined production build — both clean.
+
+**Next:** `T27` (expose stored controls + allow bleed) is the only task now unblocked — it depends on `T26`, and everything else in the graph is still gated behind `T27` or `T28` together (`T29`) or `T27` alone (`T35`). No parallelism this round; dispatching `T27` solo.
+
+## 2026-08-23 — Completed T27 editor controls and full bleed
+
+Audited the partial T27 work and completed the missing user-facing controls. Text blocks now expose color and left/center/right alignment, while every block has a precise numeric rotation field alongside the existing canvas rotation handle. Numeric position and size inputs use the same expanded bounds as server validation instead of retaining the old page-edge limits.
+
+Direct manipulation now permits moving and resizing blocks across page edges for full-bleed compositions. Pointer transforms keep a small portion recoverable on the canvas, while broader server bounds still permit deliberate values entered through the inspector and reject nonsensical geometry.
+
+`npm run typecheck`, targeted ESLint, and `git diff --check` pass.
+
+**Next:** T29 (per-zine palettes) and T35 (layers panel) are now unblocked and can proceed independently. T16 publishing is also still ready on the original v1 path.

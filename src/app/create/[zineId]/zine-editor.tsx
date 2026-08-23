@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { type MouseEvent, useEffect, useState, useTransition } from "react";
 
 import type { PageBackground, PageBlock } from "@/db/schema";
 import { createImageBlock, createTextBlock } from "@/lib/zines/blocks";
@@ -31,15 +31,37 @@ export function ZineEditor({ clerkUserId, initialPages, zine }: ZineEditorProps)
   const [pageId, setPageId] = useState(initialPages[0]?.id ?? null);
   const [blockId, setBlockId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  // Edits live in `allPages` until saved, so a page stays dirty even after the
+  // user switches away from it — track ids, not a single current-page flag.
+  const [dirtyPageIds, setDirtyPageIds] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
   const [pending, startTransition] = useTransition();
   const page = allPages.find((item) => item.id === pageId) ?? null;
   const block = page?.blocks.find((item) => item.id === blockId) ?? null;
+  const hasUnsavedChanges = dirtyPageIds.size > 0;
+
+  const markPage = (id: string, dirty: boolean) =>
+    setDirtyPageIds((items) => {
+      const next = new Set(items);
+      if (dirty) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [hasUnsavedChanges]);
 
   const changePage = (update: (value: EditorPage) => EditorPage) => {
     if (!page) return;
     setAllPages((items) =>
       items.map((item) => (item.id === page.id ? update(item) : item)),
     );
+    markPage(page.id, true);
     setMessage("Unsaved changes");
   };
 
@@ -48,14 +70,19 @@ export function ZineEditor({ clerkUserId, initialPages, zine }: ZineEditorProps)
     setBlockId(item.id);
   };
 
-  const changeBlock = (values: Partial<PageBlock>) => {
-    if (!block) return;
+  // Canvas gestures name their block explicitly: a drag starting on an unselected block
+  // selects it in the same event, and that selection hasn't rendered yet.
+  const changeBlockById = (id: string, values: Partial<PageBlock>) =>
     changePage((value) => ({
       ...value,
       blocks: value.blocks.map((item) =>
-        item.id === block.id ? ({ ...item, ...values } as PageBlock) : item,
+        item.id === id ? ({ ...item, ...values } as PageBlock) : item,
       ),
     }));
+
+  const changeBlock = (values: Partial<PageBlock>) => {
+    if (!block) return;
+    changeBlockById(block.id, values);
   };
 
   const removeBlock = () => {
@@ -68,9 +95,28 @@ export function ZineEditor({ clerkUserId, initialPages, zine }: ZineEditorProps)
   };
 
   const selectPage = (id: string) => {
+    if (id === pageId) return;
+    if (
+      page &&
+      dirtyPageIds.has(page.id) &&
+      !window.confirm(
+        "You have unsaved changes on this page. Switch pages without saving?",
+      )
+    ) {
+      return;
+    }
     setPageId(id);
     setBlockId(null);
     setMessage(null);
+  };
+
+  const guardExit = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (
+      hasUnsavedChanges &&
+      !window.confirm("You have unsaved changes. Leave without saving?")
+    ) {
+      event.preventDefault();
+    }
   };
 
   const createPage = () =>
@@ -90,6 +136,7 @@ export function ZineEditor({ clerkUserId, initialPages, zine }: ZineEditorProps)
     startTransition(async () => {
       setMessage("Saving…");
       const result = await savePage(zine.id, page.id, page.background, page.blocks);
+      if (result.ok) markPage(page.id, false);
       setMessage(result.ok ? "Saved" : result.error);
     });
 
@@ -100,6 +147,7 @@ export function ZineEditor({ clerkUserId, initialPages, zine }: ZineEditorProps)
       const result = await deletePage(zine.id, page.id);
       if (!result.ok) return setMessage(result.error);
       const remaining = allPages.filter((item) => item.id !== page.id);
+      markPage(page.id, false);
       setAllPages(remaining);
       setPageId(remaining[0]?.id ?? null);
       setBlockId(null);
@@ -128,6 +176,7 @@ export function ZineEditor({ clerkUserId, initialPages, zine }: ZineEditorProps)
     <main className="min-h-screen bg-[#efefec] pb-8">
       <EditorHeader
         message={message}
+        onExit={guardExit}
         onSave={persistPage}
         saveDisabled={!page || pending}
         templateKey={zine.templateKey}
@@ -147,6 +196,7 @@ export function ZineEditor({ clerkUserId, initialPages, zine }: ZineEditorProps)
           aspectHeight={zine.aspectHeight}
           aspectWidth={zine.aspectWidth}
           onAddPage={createPage}
+          onChangeBlock={changeBlockById}
           onSelectBlock={setBlockId}
           page={page}
           selectedBlockId={blockId}

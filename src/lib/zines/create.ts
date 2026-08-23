@@ -1,11 +1,12 @@
 import { sql } from "drizzle-orm";
 
 import { db } from "@/db";
-import { users, zines } from "@/db/schema";
+import { pages, users, zines } from "@/db/schema";
 import {
   findAspectRatio,
   type ZineTemplateKey,
 } from "@/lib/zines/options";
+import { firstPageForTemplate } from "@/lib/zines/templates";
 
 function slugifyTitle(title: string) {
   const slug = title
@@ -27,31 +28,54 @@ export async function createDraftZine(input: {
   templateKey: ZineTemplateKey;
 }) {
   const baseSlug = slugifyTitle(input.title);
+  const firstPage = firstPageForTemplate(
+    input.templateKey,
+    input.aspectRatio.width,
+    input.aspectRatio.height,
+  );
+  // Seeding page 1 inside the same statement keeps a templated draft from ever
+  // existing without its opening page. A data-modifying CTE runs even though the
+  // outer query never selects from it, and inserts nothing when the zine insert
+  // conflicted and returned no row.
+  const seedFirstPage = firstPage
+    ? sql`, seeded_page as (
+        insert into ${pages} ("zine_id", "page_number", "background", "blocks")
+        select
+          "id",
+          1,
+          ${JSON.stringify(firstPage.background)}::jsonb,
+          ${JSON.stringify(firstPage.blocks)}::jsonb
+        from new_zine
+      )`
+    : sql``;
 
   // The random suffix keeps readable slugs while making simultaneous creation
   // safe. The bounded retry remains the final guard around the database key.
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const slug = `${baseSlug}-${crypto.randomUUID().replaceAll("-", "").slice(0, 10)}`;
     const result = await db.execute<{ id: string; slug: string }>(sql`
-      insert into ${zines} (
-        "user_id",
-        "title",
-        "slug",
-        "aspect_width",
-        "aspect_height",
-        "template_key"
-      )
-      select
-        ${users.id},
-        ${input.title},
-        ${slug},
-        ${input.aspectRatio.width},
-        ${input.aspectRatio.height},
-        ${input.templateKey}
-      from ${users}
-      where ${users.clerkUserId} = ${input.clerkUserId}
-      on conflict do nothing
-      returning "id", "slug"
+      with new_zine as (
+        insert into ${zines} (
+          "user_id",
+          "title",
+          "slug",
+          "aspect_width",
+          "aspect_height",
+          "template_key"
+        )
+        select
+          ${users.id},
+          ${input.title},
+          ${slug},
+          ${input.aspectRatio.width},
+          ${input.aspectRatio.height},
+          ${input.templateKey}
+        from ${users}
+        where ${users.clerkUserId} = ${input.clerkUserId}
+        on conflict do nothing
+        returning "id", "slug"
+      )${seedFirstPage}
+      select "id", "slug" from new_zine
     `);
     const created = result.rows[0];
 

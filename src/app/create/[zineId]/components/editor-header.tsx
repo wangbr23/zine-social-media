@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import type { MouseEvent } from "react";
 
 type EditorHeaderProps = {
   title: string;
   templateKey: string | null;
   message: string | null;
   saveDisabled: boolean;
+  onExit: (event: MouseEvent<HTMLAnchorElement>) => void;
   onSave: () => void;
 };
 
@@ -15,6 +17,7 @@ export function EditorHeader({
   templateKey,
   message,
   saveDisabled,
+  onExit,
   onSave,
 }: EditorHeaderProps) {
   return (
@@ -32,6 +35,7 @@ export function EditorHeader({
         <Link
           className="editorial-text-link text-sm font-bold"
           href="/profile?tab=drafts"
+          onClick={onExit}
         >
           Exit
         </Link>
