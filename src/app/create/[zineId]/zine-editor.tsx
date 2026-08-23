@@ -218,7 +218,7 @@ export function ZineEditor({ clerkUserId, initialPages, zine }: ZineEditorProps)
         templateKey={zine.templateKey}
         title={zine.title}
       />
-      <div className="grid gap-5 p-5 lg:grid-cols-[170px_minmax(320px,1fr)_300px] lg:p-8">
+      <div className="grid items-start gap-5 p-5 lg:grid-cols-[170px_minmax(320px,1fr)_300px] lg:p-8">
         <PageRail
           canDelete={Boolean(page)}
           disabled={pending}
