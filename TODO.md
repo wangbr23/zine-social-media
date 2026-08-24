@@ -21,7 +21,7 @@ Task format: `- [ ] \`T<n>\` <description> — <manual|agent>[, depends-on: T<a>
 - [x] `T14` Zine creation flow — new draft `zines` row (title, aspect ratio, starter template or blank canvas) — agent, depends-on: T13
 - [x] `T15` Page editor UI — text/image/background blocks, writes `pages.blocks` jsonb — agent, depends-on: T14, T11
 - [x] `T16` Publish flow — lock a zine (`status: published`, set `publishedAt`, require ≥1 page) — agent, depends-on: T15, T41 — done; publishing is an explicit irreversible editor action that atomically verifies ownership, draft status, and a saved page before locking the zine
-- [ ] `T17` Zine reader view — public page rendering a zine's pages, page navigation — agent, depends-on: T16
+- [x] `T17` Zine reader view — public page rendering a zine's pages, page navigation — agent, depends-on: T16 — done; published profile cards link to a read-only handle/slug route with ordered page rendering, button/keyboard navigation, and existing private-magazine access enforcement
 - [x] `T18` Magazine profile page — own + public view, Zines/Drafts tabs, visibility toggle — agent, depends-on: T13
 - [x] `T19` Follow/unfollow, including the pending-approval flow for private magazines — agent, depends-on: T18
 - [ ] `T20` Likes + comments on the reader view — agent, depends-on: T17

@@ -10,6 +10,7 @@ import type { DeleteZineResult } from "@/lib/zines/draft-actions";
 type ProfileZine = {
   id: string;
   title: string;
+  slug: string;
   description: string | null;
   coverImageUrl: string | null;
   status: "draft" | "published";
@@ -186,7 +187,12 @@ export function ProfileView({
                   </>
                 ) : (
                   <>
-                    {card}
+                    <Link
+                      className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--editorial-blue)]"
+                      href={`/magazine/${profile.handle}/${zine.slug}`}
+                    >
+                      {card}
+                    </Link>
                     {deletePublishedAction ? (
                       <DeleteZineButton
                         action={deletePublishedAction.bind(null, zine.id)}

@@ -6,6 +6,7 @@ import { follows, pages, users, zines } from "@/db/schema";
 const profileZineSelection = {
   id: zines.id,
   title: zines.title,
+  slug: zines.slug,
   description: zines.description,
   coverImageUrl: zines.coverImageUrl,
   status: zines.status,

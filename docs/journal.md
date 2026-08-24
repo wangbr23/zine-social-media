@@ -365,3 +365,11 @@ Completed T45. New drafts now always begin with a title page using the zine's ac
 `npm run typecheck`, full `npm run lint`, and `git diff --check` pass.
 
 **Next:** T33 image treatments and T17's public reader view remain unblocked.
+
+## 2026-08-24 — Added the published zine reader
+
+Completed T17. Published profile cards now link to `/magazine/[handle]/[slug]`, where the shared `PageRenderer` displays saved pages in page-number order. The read-only reader includes previous/next buttons, a live page counter, and Arrow Left/Right plus Home/End keyboard navigation. Public magazines remain readable without authentication; private magazines use the existing owner-or-accepted-follower access check and otherwise show a private-issue explanation without exposing zine content.
+
+The reader query accepts only published zines owned by the resolved profile, and zines with no persisted pages resolve as not found. `npm run typecheck`, full `npm run lint`, `git diff --check`, and `npm run build -- --webpack` pass.
+
+**Next:** T20 likes/comments, T21 Newsstand, and T36 page-turn transitions are now unblocked by T17. T33 image treatments also remains ready.
