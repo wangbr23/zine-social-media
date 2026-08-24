@@ -1,7 +1,21 @@
 import { and, desc, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { follows, users, zines } from "@/db/schema";
+import { follows, pages, users, zines } from "@/db/schema";
+
+const profileZineSelection = {
+  id: zines.id,
+  title: zines.title,
+  description: zines.description,
+  coverImageUrl: zines.coverImageUrl,
+  status: zines.status,
+  aspectWidth: zines.aspectWidth,
+  aspectHeight: zines.aspectHeight,
+  firstPageBackground: pages.background,
+  firstPageBlocks: pages.blocks,
+  updatedAt: zines.updatedAt,
+  publishedAt: zines.publishedAt,
+};
 
 export async function findProfileByHandle(handle: string) {
   const [profile] = await db
@@ -76,16 +90,24 @@ export function getPendingFollowRequests(userId: string) {
 
 export function getPublishedZines(userId: string) {
   return db
-    .select()
+    .select(profileZineSelection)
     .from(zines)
+    .leftJoin(
+      pages,
+      and(eq(pages.zineId, zines.id), eq(pages.pageNumber, 1)),
+    )
     .where(and(eq(zines.userId, userId), eq(zines.status, "published")))
     .orderBy(desc(zines.publishedAt));
 }
 
 export function getDraftZines(userId: string) {
   return db
-    .select()
+    .select(profileZineSelection)
     .from(zines)
+    .leftJoin(
+      pages,
+      and(eq(pages.zineId, zines.id), eq(pages.pageNumber, 1)),
+    )
     .where(and(eq(zines.userId, userId), eq(zines.status, "draft")))
     .orderBy(desc(zines.updatedAt));
 }

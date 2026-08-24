@@ -42,6 +42,7 @@ type Gesture = {
   origin: CanvasPoint;
   pointerId: number;
   rotation: number;
+  moved: boolean;
 } & (
   | { kind: "move" }
   | { kind: "resize"; handle: ResizeHandle }
@@ -86,6 +87,7 @@ export function EditorCanvas({
         origin: { x: event.clientX, y: event.clientY },
         pointerId: event.pointerId,
         rotation: block.rotation,
+        moved: false,
       },
       { x: event.clientX - surface.left, y: event.clientY - surface.top },
     );
@@ -121,6 +123,9 @@ export function EditorCanvas({
       y: event.clientY - gesture.origin.y,
     };
 
+    if (!gesture.moved && Math.hypot(delta.x, delta.y) < 4) return;
+    gesture.moved = true;
+
     if (gesture.kind === "move") {
       onChangeBlock(gesture.blockId, moveFrame(gesture.frame, delta, gesture.canvas));
       return;
@@ -151,19 +156,28 @@ export function EditorCanvas({
   };
 
   const endGesture = (event: PointerEvent<HTMLElement>) => {
-    if (!gestureRef.current) return;
+    const gesture = gestureRef.current;
+    if (!gesture) return;
     if (surfaceRef.current?.hasPointerCapture(event.pointerId)) {
       surfaceRef.current.releasePointerCapture(event.pointerId);
     }
     gestureRef.current = null;
+
+    if (
+      gesture.kind === "move" &&
+      !gesture.moved &&
+      page?.blocks.some((block) => block.id === gesture.blockId && block.type === "text")
+    ) {
+      setEditingTextBlockId(gesture.blockId);
+    }
   };
 
   return (
     <section className="flex min-h-[520px] items-center justify-center overflow-auto border border-black/20 bg-[#d8d8d4] p-6">
       {page ? (
         <div
-          // Page text is edited in the inspector, so on-canvas selection only ever fights
-          // a drag. The wrapper is also the pointer-capture target for every gesture.
+          // A short press edits text while movement beyond the threshold drags the block.
+          // The wrapper is also the pointer-capture target for every gesture.
           className="relative w-full max-w-[640px] select-none"
           onPointerCancel={endGesture}
           // Pointer capture is released on its own if the element is removed mid-gesture.

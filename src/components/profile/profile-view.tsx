@@ -1,9 +1,11 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import { DeleteDraftButton } from "@/components/zines/delete-draft-button";
+import { DeleteZineButton } from "@/components/zines/delete-draft-button";
+import { PageRenderer } from "@/components/zines/page-renderer";
 import type { DatabaseUser } from "@/lib/auth/user";
-import type { DeleteDraftResult } from "@/lib/zines/draft-actions";
+import type { PageBackground, PageBlock } from "@/db/schema";
+import type { DeleteZineResult } from "@/lib/zines/draft-actions";
 
 type ProfileZine = {
   id: string;
@@ -11,6 +13,10 @@ type ProfileZine = {
   description: string | null;
   coverImageUrl: string | null;
   status: "draft" | "published";
+  aspectWidth: number;
+  aspectHeight: number;
+  firstPageBackground: PageBackground | null;
+  firstPageBlocks: PageBlock[] | null;
   updatedAt: Date;
   publishedAt: Date | null;
 };
@@ -22,7 +28,8 @@ type ProfileViewProps = {
   isOwner: boolean;
   toggleAction?: (formData: FormData) => Promise<void>;
   followControl?: ReactNode;
-  deleteDraftAction?: (zineId: string) => Promise<DeleteDraftResult>;
+  deleteDraftAction?: (zineId: string) => Promise<DeleteZineResult>;
+  deletePublishedAction?: (zineId: string) => Promise<DeleteZineResult>;
 };
 
 export function ProfileView({
@@ -33,6 +40,7 @@ export function ProfileView({
   toggleAction,
   followControl,
   deleteDraftAction,
+  deletePublishedAction,
 }: ProfileViewProps) {
   const profilePath = isOwner ? "/profile" : `/magazine/${profile.handle}`;
 
@@ -115,7 +123,17 @@ export function ProfileView({
             const card = (
               <>
                 <div className="relative aspect-[3/4] overflow-hidden bg-[#ededed]">
-                  {zine.coverImageUrl ? (
+                  {zine.firstPageBackground && zine.firstPageBlocks ? (
+                    <PageRenderer
+                      aspectHeight={zine.aspectHeight}
+                      aspectWidth={zine.aspectWidth}
+                      className="size-full"
+                      page={{
+                        background: zine.firstPageBackground,
+                        blocks: zine.firstPageBlocks,
+                      }}
+                    />
+                  ) : zine.coverImageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       alt=""
@@ -158,15 +176,26 @@ export function ProfileView({
                       {card}
                     </Link>
                     {deleteDraftAction ? (
-                      <DeleteDraftButton
+                      <DeleteZineButton
                         action={deleteDraftAction.bind(null, zine.id)}
                         className="editorial-text-link mt-4 text-sm font-bold text-red-700 disabled:opacity-50"
+                        label="draft"
                         title={zine.title}
                       />
                     ) : null}
                   </>
                 ) : (
-                  card
+                  <>
+                    {card}
+                    {deletePublishedAction ? (
+                      <DeleteZineButton
+                        action={deletePublishedAction.bind(null, zine.id)}
+                        className="editorial-text-link mt-4 text-sm font-bold text-red-700 disabled:opacity-50"
+                        label="published zine"
+                        title={zine.title}
+                      />
+                    ) : null}
+                  </>
                 )}
               </article>
             );

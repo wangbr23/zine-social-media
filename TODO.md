@@ -46,6 +46,8 @@ Grew out of a three-agent review (implementation audit, competitor research, ide
 - [x] `T35` Layers panel: bring-forward/send-back controls and a visible stack, using the existing block-array order as z-order — agent, depends-on: T27 — done; stack is shown top-first, selecting a layer selects its canvas block, and adjacent reorder controls persist through the existing page save
 - [ ] `T36` Page-turn transitions for the reader view — agent, depends-on: T17 — differentiating-tier, but genuinely blocked on the reader view existing first
 - [x] `T37` Delete owned drafts from the profile and editor, with confirmation and published-zine protection — agent — done
+- [x] `T45` Treat page one as the zine cover/title page: seed new drafts with their real title and render the authored first page on profile cards — agent — done; existing cover-image URLs remain a legacy fallback
+- [x] `T46` Allow profile owners to permanently delete published zines with confirmation, ownership/status enforcement, and safe Blob cleanup — agent — done
 
 ## Code cleanup audit
 

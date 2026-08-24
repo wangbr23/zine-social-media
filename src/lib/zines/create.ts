@@ -31,6 +31,7 @@ export async function createDraftZine(input: {
   const baseSlug = slugifyTitle(input.title);
   const firstPage = firstPageForTemplate(
     input.templateKey,
+    input.title,
     input.aspectRatio.width,
     input.aspectRatio.height,
   );
@@ -39,8 +40,7 @@ export async function createDraftZine(input: {
   // existing without its opening page. A data-modifying CTE runs even though the
   // outer query never selects from it, and inserts nothing when the zine insert
   // conflicted and returned no row.
-  const seedFirstPage = firstPage
-    ? sql`, seeded_page as (
+  const seedFirstPage = sql`, seeded_page as (
         insert into ${pages} ("zine_id", "page_number", "background", "blocks")
         select
           "id",
@@ -48,8 +48,7 @@ export async function createDraftZine(input: {
           ${JSON.stringify(firstPage.background)}::jsonb,
           ${JSON.stringify(firstPage.blocks)}::jsonb
         from new_zine
-      )`
-    : sql``;
+      )`;
 
   // The random suffix keeps readable slugs while making simultaneous creation
   // safe. The bounded retry remains the final guard around the database key.

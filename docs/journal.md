@@ -341,3 +341,27 @@ The layout generator is a browser-safe pure module with responsive percentage fr
 `npm run typecheck`, full `npm run lint`, `git diff --check`, and `npm run build -- --webpack` pass with T16 and T32's uncommitted changes integrated.
 
 **Next:** T33 image treatments and T17's public reader view are both unblocked; T36 still follows T17.
+
+## 2026-08-23 — Made on-canvas text editing reliable
+
+Text blocks now distinguish a click from a drag using a small movement threshold. Clicking a text block reliably opens its inline textarea on the page, while moving beyond the threshold continues to reposition the block. This resolves the pointer-capture conflict that could prevent the existing inline editor from receiving the click.
+
+`npm run typecheck`, full `npm run lint`, and `git diff --check` pass.
+
+**Next:** T33 image treatments and T17's public reader view remain unblocked.
+
+## 2026-08-23 — Enabled deletion of published zines
+
+Completed T46. Owners can now permanently delete a published zine from the Zines tab using the same explicit confirmation pattern as draft deletion. The server action independently enforces the authenticated owner and published status, cascades page deletion through the existing database relationship, revalidates both profile routes, and schedules the same reference-safe Blob cleanup used for drafts. Visitors never receive the deletion control.
+
+`npm run typecheck`, full `npm run lint`, and `git diff --check` pass.
+
+**Next:** T33 image treatments and T17's public reader view remain unblocked.
+
+## 2026-08-23 — Made page one the zine cover
+
+Completed T45. New drafts now always begin with a title page using the zine's actual title; the two starter templates also use that title in their primary headline. Profile cards load and render page one through the shared `PageRenderer`, so the cover shown after publishing matches what was authored rather than relying on the otherwise-unused `coverImageUrl`. The stored cover URL remains a fallback for older data without a first page.
+
+`npm run typecheck`, full `npm run lint`, and `git diff --check` pass.
+
+**Next:** T33 image treatments and T17's public reader view remain unblocked.

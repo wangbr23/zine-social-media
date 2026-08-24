@@ -92,7 +92,7 @@ function column({
   });
 }
 
-function dispatchPage(aspectWidth: number, aspectHeight: number): TemplatePage {
+function dispatchPage(title: string, aspectWidth: number, aspectHeight: number): TemplatePage {
   return {
     background: { type: "color", value: "#f4efe4" },
     blocks: column({
@@ -108,7 +108,7 @@ function dispatchPage(aspectWidth: number, aspectHeight: number): TemplatePage {
           lines: 1,
         },
         {
-          text: "The story that would not keep.",
+          text: title,
           fontScale: 2.6,
           fontFamily: "Impact",
           color: "#111111",
@@ -136,7 +136,7 @@ function dispatchPage(aspectWidth: number, aspectHeight: number): TemplatePage {
   };
 }
 
-function photoEssayPage(aspectWidth: number, aspectHeight: number): TemplatePage {
+function photoEssayPage(title: string, aspectWidth: number, aspectHeight: number): TemplatePage {
   return {
     background: {
       type: "gradient",
@@ -166,7 +166,7 @@ function photoEssayPage(aspectWidth: number, aspectHeight: number): TemplatePage
         aspectHeight,
         specs: [
           {
-            text: "Notes from a week of looking",
+            text: title,
             fontScale: 1.9,
             fontFamily: "Arial",
             color: "#f5f2ec",
@@ -192,15 +192,40 @@ function photoEssayPage(aspectWidth: number, aspectHeight: number): TemplatePage
  */
 export function firstPageForTemplate(
   templateKey: ZineTemplateKey | null,
+  title: string,
   aspectWidth: number,
   aspectHeight: number,
-): TemplatePage | null {
+): TemplatePage {
   switch (templateKey) {
     case "dispatch":
-      return dispatchPage(aspectWidth, aspectHeight);
+      return dispatchPage(title, aspectWidth, aspectHeight);
     case "photo-essay":
-      return photoEssayPage(aspectWidth, aspectHeight);
+      return photoEssayPage(title, aspectWidth, aspectHeight);
     default:
-      return null;
+      return {
+        background: { type: "color", value: "#f4efe4" },
+        blocks: column({
+          startY: 18,
+          aspectWidth,
+          aspectHeight,
+          specs: [
+            {
+              text: title,
+              fontScale: 2.6,
+              fontFamily: "Impact",
+              color: "#111111",
+              lines: 3,
+            },
+            {
+              text: "A zine by you",
+              fontScale: 0.55,
+              fontFamily: "Courier New",
+              color: "#555555",
+              lines: 1,
+              gapBefore: 4,
+            },
+          ],
+        }),
+      };
   }
 }

@@ -2,23 +2,25 @@
 
 import { useTransition } from "react";
 
-import type { DeleteDraftResult } from "@/lib/zines/draft-actions";
+import type { DeleteZineResult } from "@/lib/zines/draft-actions";
 
-type DeleteDraftButtonProps = {
-  action: () => Promise<DeleteDraftResult>;
+type DeleteZineButtonProps = {
+  action: () => Promise<DeleteZineResult>;
   className?: string;
+  label: "draft" | "published zine";
   title: string;
 };
 
-export function DeleteDraftButton({
+export function DeleteZineButton({
   action,
   className,
+  label,
   title,
-}: DeleteDraftButtonProps) {
+}: DeleteZineButtonProps) {
   const [pending, startTransition] = useTransition();
 
   const remove = () => {
-    if (!window.confirm(`Delete “${title}” permanently? This cannot be undone.`)) {
+    if (!window.confirm(`Delete the ${label} “${title}” permanently? This cannot be undone.`)) {
       return;
     }
 
@@ -35,7 +37,7 @@ export function DeleteDraftButton({
       onClick={remove}
       type="button"
     >
-      {pending ? "Deleting…" : "Delete draft"}
+      {pending ? "Deleting…" : `Delete ${label}`}
     </button>
   );
 }
