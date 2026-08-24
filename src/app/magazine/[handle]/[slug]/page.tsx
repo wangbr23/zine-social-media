@@ -2,12 +2,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ZineReader } from "@/components/zines/zine-reader";
+import { ZineEngagement } from "@/components/zines/zine-engagement";
 import { getCurrentDatabaseUser } from "@/lib/auth/user";
 import {
   canViewPrivateProfile,
   findProfileByHandle,
 } from "@/lib/profile/queries";
-import { getPublishedZineForReader } from "@/lib/zines/reader";
+import {
+  getPublishedZineForReader,
+  getZineEngagement,
+} from "@/lib/zines/reader";
+
+import { addZineComment, toggleZineLike } from "./actions";
 
 type ZineReaderPageProps = {
   params: Promise<{ handle: string; slug: string }>;
@@ -53,6 +59,10 @@ export default async function ZineReaderPage({ params }: ZineReaderPageProps) {
 
   if (!zine) notFound();
 
+  const engagement = await getZineEngagement(zine.id, viewer?.id);
+  const likeAction = toggleZineLike.bind(null, zine.id);
+  const commentAction = addZineComment.bind(null, zine.id);
+
   return (
     <main className="editorial-shell">
       <header className="mx-auto max-w-3xl border-b border-black pb-5">
@@ -78,6 +88,12 @@ export default async function ZineReaderPage({ params }: ZineReaderPageProps) {
         aspectWidth={zine.aspectWidth}
         pages={zine.pages}
         title={zine.title}
+      />
+      <ZineEngagement
+        {...engagement}
+        commentAction={commentAction}
+        isSignedIn={Boolean(viewer)}
+        likeAction={likeAction}
       />
     </main>
   );
