@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import type { PageBackground, PageBlock, ZinePalette } from "@/db/schema";
 
@@ -40,7 +40,22 @@ export function ZineReader({
   palette,
 }: ZineReaderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [turnDirection, setTurnDirection] = useState<
+    "forward" | "backward" | null
+  >(null);
   const lastIndex = pages.length - 1;
+
+  const goToPage = useCallback(
+    (nextIndex: number) => {
+      const boundedIndex = Math.max(0, Math.min(lastIndex, nextIndex));
+
+      if (boundedIndex === currentIndex) return;
+
+      setTurnDirection(boundedIndex > currentIndex ? "forward" : "backward");
+      setCurrentIndex(boundedIndex);
+    },
+    [currentIndex, lastIndex],
+  );
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -56,42 +71,51 @@ export function ZineReader({
 
       if (event.key === "ArrowLeft") {
         event.preventDefault();
-        setCurrentIndex((index) => Math.max(0, index - 1));
+        goToPage(currentIndex - 1);
       } else if (event.key === "ArrowRight") {
         event.preventDefault();
-        setCurrentIndex((index) => Math.min(lastIndex, index + 1));
+        goToPage(currentIndex + 1);
       } else if (event.key === "Home") {
         event.preventDefault();
-        setCurrentIndex(0);
+        goToPage(0);
       } else if (event.key === "End") {
         event.preventDefault();
-        setCurrentIndex(lastIndex);
+        goToPage(lastIndex);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [lastIndex]);
+  }, [currentIndex, goToPage, lastIndex]);
 
   const currentPage = pages[currentIndex];
 
   return (
     <section aria-label={`${title} reader`} className="mt-7">
-      <div className="mx-auto w-full max-w-3xl border border-black bg-white shadow-[8px_8px_0_#111]">
-        <PageRenderer
-          aspectHeight={aspectHeight}
-          aspectWidth={aspectWidth}
-          className="w-full"
-          page={currentPage}
-          palette={palette}
-        />
+      <div className="zine-reader-stage mx-auto w-full max-w-3xl border border-black bg-white shadow-[8px_8px_0_#111]">
+        <div
+          className={
+            turnDirection
+              ? `zine-page-turn zine-page-turn--${turnDirection}`
+              : undefined
+          }
+          key={currentPage.id}
+        >
+          <PageRenderer
+            aspectHeight={aspectHeight}
+            aspectWidth={aspectWidth}
+            className="w-full"
+            page={currentPage}
+            palette={palette}
+          />
+        </div>
       </div>
 
       <div className="mx-auto mt-7 grid max-w-3xl grid-cols-[1fr_auto_1fr] items-center gap-3">
         <button
           className="editorial-button justify-self-start border border-black bg-white px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] disabled:cursor-not-allowed disabled:opacity-35"
           disabled={currentIndex === 0}
-          onClick={() => setCurrentIndex((index) => Math.max(0, index - 1))}
+          onClick={() => goToPage(currentIndex - 1)}
           type="button"
         >
           ← Previous
@@ -107,9 +131,7 @@ export function ZineReader({
         <button
           className="editorial-button justify-self-end border border-black bg-black px-4 py-3 text-xs font-bold uppercase tracking-[0.12em] text-white disabled:cursor-not-allowed disabled:opacity-35"
           disabled={currentIndex === lastIndex}
-          onClick={() =>
-            setCurrentIndex((index) => Math.min(lastIndex, index + 1))
-          }
+          onClick={() => goToPage(currentIndex + 1)}
           type="button"
         >
           Next →

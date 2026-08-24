@@ -169,6 +169,39 @@ a {
   color: #008cff;
 }
 
+.zine-reader-stage {
+  perspective: 1200px;
+}
+
+.zine-page-turn {
+  animation-duration: 280ms;
+  animation-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.zine-page-turn--forward {
+  animation-name: zine-page-turn-forward;
+  transform-origin: left center;
+}
+
+.zine-page-turn--backward {
+  animation-name: zine-page-turn-backward;
+  transform-origin: right center;
+}
+
+@keyframes zine-page-turn-forward {
+  from {
+    opacity: 0.7;
+    transform: rotateY(7deg) translateX(1.5%);
+  }
+}
+
+@keyframes zine-page-turn-backward {
+  from {
+    opacity: 0.7;
+    transform: rotateY(-7deg) translateX(-1.5%);
+  }
+}
+
 @media (min-width: 700px) {
   .editorial-bottom-nav {
     padding-right: 8vw;
@@ -178,7 +211,9 @@ a {
 
 @media (prefers-reduced-motion: reduce) {
   .editorial-button,
-  .editorial-text-link {
+  .editorial-text-link,
+  .zine-page-turn {
+    animation: none;
     transition: none;
   }
 }
