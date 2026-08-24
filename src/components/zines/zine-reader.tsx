@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import type { PageBackground, PageBlock } from "@/db/schema";
+import type { PageBackground, PageBlock, ZinePalette } from "@/db/schema";
 
 import { PageRenderer } from "./page-renderer";
 
@@ -18,6 +18,7 @@ type ZineReaderProps = {
   aspectHeight: number;
   pages: ReaderPage[];
   title: string;
+  palette: ZinePalette;
 };
 
 function isTypingTarget(target: EventTarget | null) {
@@ -36,6 +37,7 @@ export function ZineReader({
   aspectHeight,
   pages,
   title,
+  palette,
 }: ZineReaderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const lastIndex = pages.length - 1;
@@ -81,6 +83,7 @@ export function ZineReader({
           aspectWidth={aspectWidth}
           className="w-full"
           page={currentPage}
+          palette={palette}
         />
       </div>
 

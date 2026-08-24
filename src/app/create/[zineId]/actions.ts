@@ -13,6 +13,8 @@ import {
   MAX_FONT_SIZE_UNITS,
   MIN_BLOCK_POSITION_PERCENT,
   MIN_FONT_SIZE_UNITS,
+  isImageFilter,
+  isImageFrame,
   isShapeKind,
 } from "@/lib/zines/blocks";
 import { isCuratedFontFamily } from "@/lib/zines/fonts";
@@ -76,7 +78,18 @@ function validBlock(value: unknown): value is PageBlock {
   const item = value;
   if (typeof item.id !== "string" || !validFrame(item)) return false;
   if (item.type === "text") return typeof item.text === "string" && item.text.length <= 5000 && isCuratedFontFamily(item.fontFamily) && typeof item.fontSize === "number" && item.fontSize >= MIN_FONT_SIZE_UNITS && item.fontSize <= MAX_FONT_SIZE_UNITS && typeof item.color === "string" && (item.textAlign === "left" || item.textAlign === "center" || item.textAlign === "right");
-  if (item.type === "image") return typeof item.url === "string" && item.url.startsWith("https://") && typeof item.alt === "string" && item.alt.length <= 500 && (item.objectFit === "cover" || item.objectFit === "contain");
+  if (item.type === "image") {
+    const validColors = item.filterColors === undefined || (
+      Array.isArray(item.filterColors) &&
+      item.filterColors.length === 2 &&
+      item.filterColors.every((index) => Number.isInteger(index) && index >= 0 && index < 5)
+    );
+    return typeof item.url === "string" && item.url.startsWith("https://") &&
+      typeof item.alt === "string" && item.alt.length <= 500 &&
+      (item.objectFit === "cover" || item.objectFit === "contain") &&
+      (item.frame === undefined || isImageFrame(item.frame)) &&
+      (item.filter === undefined || isImageFilter(item.filter)) && validColors;
+  }
   if (item.type === "shape") return isShapeKind(item.shape) && typeof item.color === "string" && item.color.length > 0 && item.color.length <= 100;
   return false;
 }

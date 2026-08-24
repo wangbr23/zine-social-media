@@ -31,6 +31,9 @@ export type PageBackground = {
 
 export type ZinePalette = [string, string, string, string, string];
 
+export type ImageFrame = "none" | "polaroid" | "torn-edge" | "circle";
+export type ImageFilter = "none" | "duotone" | "xerox" | "riso";
+
 export type TextBlock = {
   id: string;
   type: "text";
@@ -57,6 +60,11 @@ export type ImageBlock = {
   url: string;
   alt: string;
   objectFit: "cover" | "contain";
+  /** Optional so pages authored before image treatments continue to render and save. */
+  frame?: ImageFrame;
+  filter?: ImageFilter;
+  /** Indices into the owning zine's palette, keeping filters tied to palette changes. */
+  filterColors?: [number, number];
 };
 
 export type ShapeKind = "torn-paper" | "tape" | "speech-bubble" | "starburst";

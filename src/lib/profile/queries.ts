@@ -12,6 +12,7 @@ const profileZineSelection = {
   status: zines.status,
   aspectWidth: zines.aspectWidth,
   aspectHeight: zines.aspectHeight,
+  palette: zines.palette,
   firstPageBackground: pages.background,
   firstPageBlocks: pages.blocks,
   updatedAt: zines.updatedAt,

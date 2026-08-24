@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { DeleteZineButton } from "@/components/zines/delete-draft-button";
 import { PageRenderer } from "@/components/zines/page-renderer";
 import type { DatabaseUser } from "@/lib/auth/user";
-import type { PageBackground, PageBlock } from "@/db/schema";
+import type { PageBackground, PageBlock, ZinePalette } from "@/db/schema";
 import type { DeleteZineResult } from "@/lib/zines/draft-actions";
 
 type ProfileZine = {
@@ -16,6 +16,7 @@ type ProfileZine = {
   status: "draft" | "published";
   aspectWidth: number;
   aspectHeight: number;
+  palette: ZinePalette;
   firstPageBackground: PageBackground | null;
   firstPageBlocks: PageBlock[] | null;
   updatedAt: Date;
@@ -133,6 +134,7 @@ export function ProfileView({
                         background: zine.firstPageBackground,
                         blocks: zine.firstPageBlocks,
                       }}
+                      palette={zine.palette}
                     />
                   ) : zine.coverImageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
