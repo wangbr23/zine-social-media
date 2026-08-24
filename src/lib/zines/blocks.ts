@@ -1,5 +1,7 @@
 import type {
   ImageBlock,
+  ImageFilter,
+  ImageFrame,
   PageBlock,
   ShapeBlock,
   ShapeKind,
@@ -47,6 +49,28 @@ export const SHAPE_OPTIONS = [
   { kind: "starburst", label: "Starburst" },
 ] as const satisfies ReadonlyArray<{ kind: ShapeKind; label: string }>;
 
+export const IMAGE_FRAME_OPTIONS = [
+  { value: "none", label: "None" },
+  { value: "polaroid", label: "Polaroid" },
+  { value: "torn-edge", label: "Torn edge" },
+  { value: "circle", label: "Circle" },
+] as const satisfies ReadonlyArray<{ value: ImageFrame; label: string }>;
+
+export const IMAGE_FILTER_OPTIONS = [
+  { value: "none", label: "Original" },
+  { value: "duotone", label: "Duotone" },
+  { value: "xerox", label: "Xerox" },
+  { value: "riso", label: "Riso" },
+] as const satisfies ReadonlyArray<{ value: ImageFilter; label: string }>;
+
+export function isImageFrame(value: unknown): value is ImageFrame {
+  return IMAGE_FRAME_OPTIONS.some((option) => option.value === value);
+}
+
+export function isImageFilter(value: unknown): value is ImageFilter {
+  return IMAGE_FILTER_OPTIONS.some((option) => option.value === value);
+}
+
 export function isShapeKind(value: unknown): value is ShapeKind {
   return SHAPE_OPTIONS.some(({ kind }) => kind === value);
 }
@@ -82,6 +106,9 @@ export function applyPageBlockPatch(
       url: patch.url ?? block.url,
       alt: patch.alt ?? block.alt,
       objectFit: patch.objectFit ?? block.objectFit,
+      frame: patch.frame ?? block.frame,
+      filter: patch.filter ?? block.filter,
+      filterColors: patch.filterColors ?? block.filterColors,
     };
   }
 
@@ -131,6 +158,9 @@ export function createImageBlock({ alt, url }: { alt: string; url: string }): Im
     url,
     alt,
     objectFit: "cover",
+    frame: "none",
+    filter: "none",
+    filterColors: [0, 2],
   };
 }
 

@@ -15,6 +15,7 @@ export async function getPublishedZineForReader(
       aspectWidth: zines.aspectWidth,
       aspectHeight: zines.aspectHeight,
       publishedAt: zines.publishedAt,
+      palette: zines.palette,
     })
     .from(zines)
     .where(

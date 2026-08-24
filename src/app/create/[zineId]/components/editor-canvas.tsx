@@ -4,6 +4,7 @@ import { type PointerEvent, useRef, useState } from "react";
 
 import { PageRenderer } from "@/components/zines/page-renderer";
 import type { PageBlockPatch } from "@/lib/zines/blocks";
+import type { ZinePalette } from "@/db/schema";
 
 import type { EditorPage } from "../actions";
 import {
@@ -27,6 +28,7 @@ type EditorCanvasProps = {
   onSelectBlock: (blockId: string) => void;
   onChangeBlock: (blockId: string, values: PageBlockPatch) => void;
   onAddPage: () => void;
+  palette: ZinePalette;
 };
 
 /**
@@ -61,6 +63,7 @@ export function EditorCanvas({
   onSelectBlock,
   onChangeBlock,
   onAddPage,
+  palette,
 }: EditorCanvasProps) {
   const surfaceRef = useRef<HTMLDivElement>(null);
   const gestureRef = useRef<Gesture | null>(null);
@@ -197,6 +200,7 @@ export function EditorCanvas({
             onFinishTextEditing={() => setEditingTextBlockId(null)}
             onSelectBlock={onSelectBlock}
             page={page}
+            palette={palette}
             selectedBlockId={selectedBlockId}
           />
           {selectedBlock ? (

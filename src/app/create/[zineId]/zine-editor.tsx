@@ -52,6 +52,7 @@ export function ZineEditor(props: ZineEditorProps) {
           onChangeBlock={editor.changeBlockById}
           onSelectBlock={editor.selectBlock}
           page={editor.page}
+          palette={editor.palette}
           selectedBlockId={editor.blockId}
         />
         <PaletteProvider palette={editor.palette}>

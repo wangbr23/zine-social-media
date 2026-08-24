@@ -77,6 +77,7 @@ export default async function ZineReaderPage({ params }: ZineReaderPageProps) {
         aspectHeight={zine.aspectHeight}
         aspectWidth={zine.aspectWidth}
         pages={zine.pages}
+        palette={zine.palette}
         title={zine.title}
       />
     </main>

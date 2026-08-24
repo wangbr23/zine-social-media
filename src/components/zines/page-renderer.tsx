@@ -2,7 +2,7 @@
 
 import type { KeyboardEvent, PointerEvent } from "react";
 
-import type { PageBackground, PageBlock, ShapeKind } from "@/db/schema";
+import type { ImageBlock, PageBackground, PageBlock, ShapeKind, ZinePalette } from "@/db/schema";
 import { pageUnitsToCss } from "@/lib/zines/blocks";
 
 export type RenderablePage = {
@@ -14,6 +14,7 @@ type PageRendererProps = {
   page: RenderablePage;
   aspectWidth: number;
   aspectHeight: number;
+  palette?: ZinePalette;
   /** Sizing and chrome for the page surface (width, shadow, …) come from the caller. */
   className?: string;
   selectedBlockId?: string | null;
@@ -42,6 +43,7 @@ export function PageRenderer({
   page,
   aspectWidth,
   aspectHeight,
+  palette,
   className,
   selectedBlockId,
   onSelectBlock,
@@ -72,7 +74,7 @@ export function PageRenderer({
         if (!onSelectBlock) {
           return (
             <div className="absolute overflow-hidden" key={block.id} style={frame}>
-              <BlockContent block={block} />
+              <BlockContent block={block} palette={palette} />
             </div>
           );
         }
@@ -118,7 +120,7 @@ export function PageRenderer({
                 value={block.text}
               />
             ) : (
-              <BlockContent block={block} />
+              <BlockContent block={block} palette={palette} />
             )}
           </div>
         );
@@ -127,7 +129,7 @@ export function PageRenderer({
   );
 }
 
-function BlockContent({ block }: { block: PageBlock }) {
+function BlockContent({ block, palette }: { block: PageBlock; palette?: ZinePalette }) {
   if (block.type === "text") {
     return (
       <span
@@ -148,18 +150,52 @@ function BlockContent({ block }: { block: PageBlock }) {
     return <ShapeArtwork color={block.color} shape={block.shape} />;
   }
 
+  return <ImageArtwork block={block} palette={palette} />;
+}
+
+const tornEdge = "polygon(0 3%,5% 1%,10% 4%,16% 0,22% 3%,29% 1%,35% 4%,42% 0,49% 3%,56% 1%,63% 4%,70% 0,77% 3%,84% 1%,91% 4%,100% 1%,98% 97%,92% 100%,85% 96%,78% 99%,70% 96%,63% 100%,55% 97%,48% 99%,40% 96%,33% 100%,25% 97%,18% 99%,10% 96%,2% 99%)";
+
+function ImageArtwork({ block, palette }: { block: ImageBlock; palette?: ZinePalette }) {
+  const frame = block.frame ?? "none";
+  const filter = block.filter ?? "none";
+  const [darkIndex, inkIndex] = block.filterColors ?? [0, 2];
+  const dark = palette?.[darkIndex] ?? "#111111";
+  const ink = palette?.[inkIndex] ?? "#ef2d32";
+  const imageFilter = filter === "xerox"
+    ? "grayscale(1) contrast(2.4) brightness(1.08)"
+    : filter === "none" ? undefined : "grayscale(1) contrast(1.35)";
+  const frameStyle = frame === "circle"
+    ? { borderRadius: "50%" }
+    : frame === "torn-edge" ? { clipPath: tornEdge } : undefined;
+
   return (
-    // Block images are arbitrary uploaded blobs rendered at author-chosen frames,
-    // so they skip next/image rather than requiring a host allowlist and layout rules.
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      alt={block.alt}
-      className="h-full w-full"
-      // The browser's native image drag would otherwise pre-empt dragging the block.
-      draggable={false}
-      src={block.url}
-      style={{ objectFit: block.objectFit }}
-    />
+    <div
+      className={`relative h-full w-full overflow-hidden ${frame === "polaroid" ? "bg-white p-[5%] pb-[16%] shadow-[0_2px_5px_rgba(0,0,0,.3)]" : ""}`}
+      style={frameStyle}
+    >
+      {/* Uploaded blobs have arbitrary URLs and author-controlled frames. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        alt={block.alt}
+        className="h-full w-full"
+        draggable={false}
+        src={block.url}
+        style={{ filter: imageFilter, objectFit: block.objectFit }}
+      />
+      {filter !== "none" ? (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background: filter === "riso"
+              ? `repeating-radial-gradient(circle at 20% 30%, ${ink} 0 1px, transparent 1px 4px), ${dark}`
+              : `linear-gradient(135deg, ${dark}, ${ink})`,
+            mixBlendMode: filter === "xerox" ? "multiply" : "color",
+            opacity: filter === "riso" ? 0.72 : filter === "xerox" ? 0.38 : 1,
+          }}
+        />
+      ) : null}
+    </div>
   );
 }
 

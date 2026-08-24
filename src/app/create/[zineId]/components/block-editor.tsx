@@ -2,6 +2,8 @@
 
 import type { PageBlock } from "@/db/schema";
 import {
+  IMAGE_FILTER_OPTIONS,
+  IMAGE_FRAME_OPTIONS,
   MAX_BLOCK_POSITION_PERCENT,
   MAX_BLOCK_SIZE_PERCENT,
   MAX_FONT_SIZE_UNITS,
@@ -15,6 +17,7 @@ import {
 } from "@/lib/zines/fonts";
 
 import { ColorSwatches } from "./color-swatches";
+import { useZinePalette } from "./palette-context";
 
 const frameFields = ["x", "y", "width", "height"] as const;
 
@@ -25,6 +28,7 @@ type BlockEditorProps = {
 };
 
 export function BlockEditor({ block, onChange, onDelete }: BlockEditorProps) {
+  const palette = useZinePalette();
   return (
     <div className="mt-8 border-t border-black/20 pt-5">
       <h3 className="editorial-display text-lg capitalize">{block.type} block</h3>
@@ -132,6 +136,7 @@ export function BlockEditor({ block, onChange, onDelete }: BlockEditorProps) {
               <option value="contain">Show whole image</option>
             </select>
           </label>
+          <ImageTreatmentEditor block={block} onChange={onChange} palette={palette} />
         </>
       ) : (
         <label className="mt-4 block text-xs font-bold uppercase">
@@ -203,5 +208,72 @@ export function BlockEditor({ block, onChange, onDelete }: BlockEditorProps) {
         Remove block
       </button>
     </div>
+  );
+}
+
+function ImageTreatmentEditor({
+  block,
+  onChange,
+  palette,
+}: {
+  block: Extract<PageBlock, { type: "image" }>;
+  onChange: (value: PageBlockPatch) => void;
+  palette: readonly string[];
+}) {
+  return (
+    <>
+      <fieldset className="mt-4">
+        <legend className="text-xs font-bold uppercase">Frame</legend>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          {IMAGE_FRAME_OPTIONS.map((option) => (
+            <button
+              aria-pressed={(block.frame ?? "none") === option.value}
+              className={`border px-2 py-2 text-xs ${(block.frame ?? "none") === option.value ? "border-black bg-black text-white" : "border-black/30"}`}
+              key={option.value}
+              onClick={() => onChange({ frame: option.value })}
+              type="button"
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+      <fieldset className="mt-4">
+        <legend className="text-xs font-bold uppercase">Treatment</legend>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          {IMAGE_FILTER_OPTIONS.map((option) => (
+            <button
+              aria-pressed={(block.filter ?? "none") === option.value}
+              className={`border px-2 py-2 text-xs ${(block.filter ?? "none") === option.value ? "border-black bg-black text-white" : "border-black/30"}`}
+              key={option.value}
+              onClick={() => onChange({ filter: option.value })}
+              type="button"
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </fieldset>
+      {(block.filter ?? "none") !== "none" ? (
+        <fieldset className="mt-4">
+          <legend className="text-xs font-bold uppercase">Palette ink</legend>
+          <div className="mt-2 grid grid-cols-5 gap-2">
+            {palette.map((color, index) => (
+              <button
+                aria-label={`Use ${color} as filter ink`}
+                className={`aspect-square border-2 ${(block.filterColors ?? [0, 2])[1] === index ? "border-black" : "border-transparent"}`}
+                key={`${color}-${index}`}
+                onClick={() => onChange({ filterColors: [0, index] })}
+                style={{ backgroundColor: color }}
+                type="button"
+              />
+            ))}
+          </div>
+          <p className="editorial-serif mt-2 text-xs text-black/55">
+            The dark and bright inks follow your zine palette.
+          </p>
+        </fieldset>
+      ) : null}
+    </>
   );
 }
