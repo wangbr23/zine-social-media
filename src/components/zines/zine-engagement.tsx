@@ -1,8 +1,12 @@
 import Link from "next/link";
 
-import { CommentForm } from "./comment-form";
+import type {
+  CommentState,
+  DeleteCommentResult,
+} from "@/app/magazine/[handle]/[slug]/actions";
 
-type CommentState = { error?: string; submissionCount?: number };
+import { CommentControls } from "./comment-controls";
+import { CommentForm } from "./comment-form";
 
 type ZineComment = {
   id: string;
@@ -10,11 +14,18 @@ type ZineComment = {
   createdAt: Date;
   displayName: string;
   handle: string;
+  viewerOwnsComment: boolean;
 };
 
 type ZineEngagementProps = {
   comments: ZineComment[];
   commentAction: (
+    state: CommentState,
+    formData: FormData,
+  ) => Promise<CommentState>;
+  deleteCommentAction: (commentId: string) => Promise<DeleteCommentResult>;
+  editCommentAction: (
+    commentId: string,
     state: CommentState,
     formData: FormData,
   ) => Promise<CommentState>;
@@ -27,6 +38,8 @@ type ZineEngagementProps = {
 export function ZineEngagement({
   comments,
   commentAction,
+  deleteCommentAction,
+  editCommentAction,
   isSignedIn,
   likeAction,
   likeCount,
@@ -93,6 +106,14 @@ export function ZineEngagement({
                 <p className="editorial-serif mt-2 whitespace-pre-wrap break-words text-base">
                   {comment.body}
                 </p>
+                {comment.viewerOwnsComment ? (
+                  <CommentControls
+                    body={comment.body}
+                    commentId={comment.id}
+                    deleteAction={deleteCommentAction.bind(null, comment.id)}
+                    editAction={editCommentAction.bind(null, comment.id)}
+                  />
+                ) : null}
               </li>
             ))}
           </ol>

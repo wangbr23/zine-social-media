@@ -55,6 +55,7 @@ export async function getZineEngagement(zineId: string, viewerId?: string) {
         createdAt: comments.createdAt,
         displayName: users.displayName,
         handle: users.handle,
+        userId: comments.userId,
       })
       .from(comments)
       .innerJoin(users, eq(users.id, comments.userId))
@@ -70,7 +71,10 @@ export async function getZineEngagement(zineId: string, viewerId?: string) {
   ]);
 
   return {
-    comments: zineComments,
+    comments: zineComments.map(({ userId, ...comment }) => ({
+      ...comment,
+      viewerOwnsComment: userId === viewerId,
+    })),
     likeCount: likeCount.value,
     viewerHasLiked: viewerLike.length > 0,
   };

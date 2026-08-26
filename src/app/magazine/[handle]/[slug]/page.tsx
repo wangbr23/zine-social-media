@@ -14,7 +14,12 @@ import {
   getZineEngagement,
 } from "@/lib/zines/reader";
 
-import { addZineComment, toggleZineLike } from "./actions";
+import {
+  addZineComment,
+  deleteZineComment,
+  editZineComment,
+  toggleZineLike,
+} from "./actions";
 
 type ZineReaderPageProps = {
   params: Promise<{ handle: string; slug: string }>;
@@ -131,6 +136,8 @@ export default async function ZineReaderPage({ params }: ZineReaderPageProps) {
       <ZineEngagement
         {...engagement}
         commentAction={commentAction}
+        deleteCommentAction={deleteZineComment.bind(null, zine.id)}
+        editCommentAction={editZineComment.bind(null, zine.id)}
         isSignedIn={Boolean(viewer)}
         likeAction={likeAction}
       />
