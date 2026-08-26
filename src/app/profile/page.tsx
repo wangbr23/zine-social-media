@@ -41,6 +41,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
         deleteDraftAction={deleteDraftZine}
         deletePublishedAction={deletePublishedZine}
         isOwner
+        pendingFollowRequestCount={followRequests.length}
         profile={user}
         tab={tab}
         toggleAction={toggleProfileVisibility}

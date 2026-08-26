@@ -32,6 +32,7 @@ type ProfileViewProps = {
   followControl?: ReactNode;
   deleteDraftAction?: (zineId: string) => Promise<DeleteZineResult>;
   deletePublishedAction?: (zineId: string) => Promise<DeleteZineResult>;
+  pendingFollowRequestCount?: number;
 };
 
 export function ProfileView({
@@ -43,6 +44,7 @@ export function ProfileView({
   followControl,
   deleteDraftAction,
   deletePublishedAction,
+  pendingFollowRequestCount = 0,
 }: ProfileViewProps) {
   const profilePath = isOwner ? "/profile" : `/magazine/${profile.handle}`;
 
@@ -69,7 +71,18 @@ export function ProfileView({
           )}
 
           <div className="min-w-0">
-            <p className="editorial-eyebrow">Magazine</p>
+            <div className="mb-[10px] flex flex-wrap items-center gap-3">
+              <p className="editorial-eyebrow mb-0">Magazine</p>
+              {isOwner && pendingFollowRequestCount ? (
+                <Link
+                  aria-label={`${pendingFollowRequestCount} pending follow ${pendingFollowRequestCount === 1 ? "request" : "requests"}`}
+                  className="rounded-full bg-[var(--editorial-red)] px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-[0.1em] text-white transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--editorial-blue)]"
+                  href="#follow-requests"
+                >
+                  {pendingFollowRequestCount} pending
+                </Link>
+              ) : null}
+            </div>
             <h1 className="editorial-display break-words text-4xl leading-none md:text-6xl">
               {profile.displayName}
             </h1>

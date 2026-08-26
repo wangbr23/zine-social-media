@@ -397,3 +397,19 @@ Completed T52. The page renderer's keyboard-accessible block wrapper now ignores
 `npm run typecheck`, full `npm run lint`, and `git diff --check` pass.
 
 **Next:** T50 profile search and T51's pending-follow-request indicator remain open.
+
+## 2026-08-25 — Added profile search
+
+Completed T50. Authenticated users now have a Search destination in the bottom navigation and can find profiles by a case-insensitive partial handle or display-name match. The query treats SQL wildcard characters as literal input, caps results at 30, and returns only avatar, display name, and handle; opening a result continues through the existing public/private profile access checks.
+
+`npm run typecheck`, full `npm run lint`, `git diff --check`, and `npm run build -- --webpack` pass.
+
+**Next:** T51's pending-follow-request indicator remains open.
+
+## 2026-08-25 — Surfaced pending follow requests
+
+Completed T51. When an owner has pending follow requests, their profile heading now shows a red count badge linked directly to the existing request approval controls. The badge reuses the request data already loaded by the profile page, so this adds no query or notification infrastructure.
+
+`npm run typecheck`, full `npm run lint`, `git diff --check`, and `npm run build -- --webpack` pass with T50 and T52's current changes.
+
+**Next:** The tracked backlog is complete.

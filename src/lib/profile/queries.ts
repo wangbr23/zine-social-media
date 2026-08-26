@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, or } from "drizzle-orm";
 
 import { db } from "@/db";
 import { follows, pages, users, zines } from "@/db/schema";
@@ -27,6 +27,28 @@ export async function findProfileByHandle(handle: string) {
     .limit(1);
 
   return profile ?? null;
+}
+
+export function searchProfiles(query: string) {
+  const escapedQuery = query.replace(/[\\%_]/g, "\\$&");
+  const pattern = `%${escapedQuery}%`;
+
+  return db
+    .select({
+      id: users.id,
+      displayName: users.displayName,
+      handle: users.handle,
+      avatarUrl: users.avatarUrl,
+    })
+    .from(users)
+    .where(
+      or(
+        ilike(users.handle, pattern),
+        ilike(users.displayName, pattern),
+      ),
+    )
+    .orderBy(asc(users.handle))
+    .limit(30);
 }
 
 export async function canViewPrivateProfile(

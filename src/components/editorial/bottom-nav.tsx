@@ -1,11 +1,12 @@
 import Link from "next/link";
 
 type BottomNavProps = {
-  active: "newsstand" | "create" | "profile";
+  active: "newsstand" | "search" | "create" | "profile";
 };
 
 const items = [
   { id: "newsstand", href: "/newsstand", icon: "★", label: "Newsstand" },
+  { id: "search", href: "/search", icon: "⌕", label: "Search" },
   { id: "create", href: "/create", icon: "+", label: "Create" },
   { id: "profile", href: "/profile", icon: "●", label: "Profile" },
 ] as const;

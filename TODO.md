@@ -73,8 +73,8 @@ Surfaced from a full-repo audit after the last tracked task (T46) merged — the
 
 Grew out of a three-agent research pass (implementation audit, competitor research, ideas brainstorm) into how new users find people to follow — synthesized as "The Circulation Desk" memo (not saved to disk verbatim). The user chose to prioritize search over the memo's own recommended low-risk tier (share/invite links, follower lists, recommended-by, empty-state fix, QR code); see `docs/decisions.md`'s 2026-08-25 entries for both scope calls this made, including the narrow reopening of "no discovery surface in v1" and the accepted risk it raises around "no moderation in v1."
 
-- [ ] `T50` Add profile search by handle/display name — agent — simple case-insensitive partial match (SQL `ILIKE`, no search service/infra), surfaced via a search entry point in the app shell; a result shows the same handle/displayName/avatar-level info a private profile already reveals to a signed-out exact-handle visit today, so it doesn't newly expose anything currently gated — full profile content stays behind the existing follow/approval check
-- [ ] `T51` Add a minimal in-app pending-follow-request signal on a profile owner's own profile (badge/count only — no push, no email, no notification center) — agent
+- [x] `T50` Add profile search by handle/display name — agent — done; authenticated users can run a case-insensitive partial search from a fourth app-shell tab, with results limited to avatar, display name, and handle before existing profile privacy checks take over
+- [x] `T51` Add a minimal in-app pending-follow-request signal on a profile owner's own profile (badge/count only — no push, no email, no notification center) — agent — done; a profile-header count badge links owners directly to the existing approval controls
 
 ## Bugs
 

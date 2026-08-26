@@ -20,7 +20,7 @@ export function FollowRequests({
   if (!requests.length) return null;
 
   return (
-    <section className="mb-10 border-y border-black py-6">
+    <section className="mb-10 border-y border-black py-6" id="follow-requests">
       <div className="mb-5 flex items-baseline justify-between gap-4">
         <h2 className="editorial-display text-3xl">FOLLOW REQUESTS</h2>
         <span className="text-xs font-bold uppercase tracking-[0.15em] text-[var(--editorial-red)]">
