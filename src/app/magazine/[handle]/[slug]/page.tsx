@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ZineReader } from "@/components/zines/zine-reader";
@@ -18,6 +19,43 @@ import { addZineComment, toggleZineLike } from "./actions";
 type ZineReaderPageProps = {
   params: Promise<{ handle: string; slug: string }>;
 };
+
+export async function generateMetadata({
+  params,
+}: ZineReaderPageProps): Promise<Metadata> {
+  const { handle, slug } = await params;
+  const profile = await findProfileByHandle(handle);
+
+  if (!profile) return {};
+
+  if (profile.visibility === "private") {
+    return {
+      title: "Private Issue | Zine",
+      description: "This issue is available only to accepted followers.",
+      robots: { index: false, follow: false },
+      openGraph: {
+        title: "Private Issue | Zine",
+        description: "This issue is available only to accepted followers.",
+        type: "article",
+      },
+      twitter: { card: "summary_large_image" },
+    };
+  }
+
+  const zine = await getPublishedZineForReader(profile.id, slug);
+  if (!zine) return {};
+
+  const title = `${zine.title} by ${profile.displayName} | Zine`;
+  const description =
+    zine.description ?? `Read ${zine.title}, a zine by ${profile.displayName}.`;
+
+  return {
+    title,
+    description,
+    openGraph: { title, description, type: "article" },
+    twitter: { card: "summary_large_image", title, description },
+  };
+}
 
 export default async function ZineReaderPage({ params }: ZineReaderPageProps) {
   const { handle, slug } = await params;

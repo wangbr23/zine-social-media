@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { FollowButton } from "@/components/profile/follow-button";
 import { ProfileView } from "@/components/profile/profile-view";
@@ -16,6 +17,40 @@ import { toggleFollow } from "./actions";
 type PublicProfilePageProps = {
   params: Promise<{ handle: string }>;
 };
+
+export async function generateMetadata({
+  params,
+}: PublicProfilePageProps): Promise<Metadata> {
+  const { handle } = await params;
+  const profile = await findProfileByHandle(handle);
+
+  if (!profile) return {};
+
+  if (profile.visibility === "private") {
+    return {
+      title: "Private Magazine | Zine",
+      description: "This magazine is available only to accepted followers.",
+      robots: { index: false, follow: false },
+      openGraph: {
+        title: "Private Magazine | Zine",
+        description: "This magazine is available only to accepted followers.",
+        type: "profile",
+      },
+      twitter: { card: "summary_large_image" },
+    };
+  }
+
+  const title = `${profile.displayName} (@${profile.handle}) | Zine`;
+  const description =
+    profile.bio ?? `Read published zines by ${profile.displayName}.`;
+
+  return {
+    title,
+    description,
+    openGraph: { title, description, type: "profile" },
+    twitter: { card: "summary_large_image", title, description },
+  };
+}
 
 export default async function PublicProfilePage({
   params,
