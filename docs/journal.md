@@ -373,3 +373,27 @@ Completed T17. Published profile cards now link to `/magazine/[handle]/[slug]`, 
 The reader query accepts only published zines owned by the resolved profile, and zines with no persisted pages resolve as not found. `npm run typecheck`, full `npm run lint`, `git diff --check`, and `npm run build -- --webpack` pass.
 
 **Next:** T20 likes/comments, T21 Newsstand, and T36 page-turn transitions are now unblocked by T17. T33 image treatments also remains ready.
+
+## 2026-08-24 — Landed T20, T21, T33, and T36 via /dispatch
+
+Ran `/dispatch` on the four now-unblocked tasks, each in its own isolated git worktree. All four hit a transient Claude API overload (529) shortly after starting and were resumed; after that, dispatch and merge happened outside this session (merged directly to `main`: `a21fabc` T21, `19bddd0` T33, `098e1c6` T20, `008005c` T36 — the last with a real conflict in `zine-reader.tsx` between T33's new `palette` prop and T36's page-turn wrapper, resolved keeping both). `TODO.md` was checked off as part of that merge (dispatch's own job), but the journal write was missed — that's `save-progress`'s job, not dispatch's — so this entry reconstructs it from a direct review of the merged diffs.
+
+**T20**: `toggleZineLike` (atomic delete-then-insert-on-conflict-do-nothing toggle) and `addZineComment` (1–2000 chars, matching the schema check) both live in a new `src/app/magazine/[handle]/[slug]/actions.ts`, gated through a shared `getEngageableZine` helper that only allows published zines the viewer can actually see (private-profile access reuses the existing `canViewPrivateProfile` check). No comment deletion — left out of scope on purpose. No notifications, per the standing v1 decision.
+
+**T21**: `src/lib/newsstand/queries.ts` joins `follows` (status `accepted`) → `users` → published `zines`, left-joined to each zine's page-one for the cover, ordered by `publishedAt` descending. Strictly follows-only with no ranking or cross-user discovery, matching the design doc.
+
+**T33**: `ImageBlock` gained three additive optional fields — `frame` (`polaroid`/`torn-edge`/`circle`), `filter` (`duotone`/`xerox`/`riso`), and `filterColors` (a pair of *indices* into the zine's palette rather than raw colors, so a duotone filter stays in sync if the palette changes). No migration needed (`pages.blocks` only checks "is an array").
+
+**T36**: A directional page-turn animation (`turnDirection`, forward/backward) wraps `PageRenderer` in the reader, keyed per page so the transition replays on every navigation; respects `prefers-reduced-motion` and skips animating on initial load or a blocked boundary (already on first/last page). No new dependency, no change to `PageRenderer`'s own contract beyond what T33 already added.
+
+Reviewed all four diffs directly (no agent report was available for the resumed/externally-merged runs) and confirmed `npm run typecheck` and a full `rm -rf .next && npm run build -- --webpack` both pass clean on the merged `main`.
+
+**Next:** Audited the full repo against `docs/decisions.md` and the design doc's "Open items" list now that the tracked backlog (T1–T46) is fully complete. Added T47–T49 (SEO/social metadata, comment delete/edit, custom 404) as low-risk gaps with no decision conflicts. Two other candidates — real access control for private-profile images, and basic comment reporting — were surfaced explicitly to the user as now more load-bearing than when they were accepted, but the user chose to leave both as accepted v1 tradeoffs for now rather than reopen them.
+
+## 2026-08-25 — Fixed inline text whitespace input
+
+Completed T52. The page renderer's keyboard-accessible block wrapper now ignores Space and Enter events while that block's inline textarea is active, allowing both characters to be typed normally while preserving keyboard selection behavior outside edit mode.
+
+`npm run typecheck`, full `npm run lint`, and `git diff --check` pass.
+
+**Next:** T50 profile search and T51's pending-follow-request indicator remain open.

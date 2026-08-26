@@ -91,3 +91,23 @@ Append-only log of architecture decisions. One entry per decision, newest at the
 **Decision:** The creation/editing experience targets desktop (mouse/trackpad precision, hover states, a persistent side rail) first. It should remain usable on touch but is not optimized for it in this round.
 
 **Consequences:** Touch-first patterns from the competitor research (long-press reordering, floating contextual toolbar, bottom-sheet inspector) are not part of this round's design. Revisit if usage data shows creation happening primarily on mobile.
+
+## 2026-08-25 — Search by handle/name is the near-term "finding people" priority; most other Circulation Desk ideas deferred
+
+**Status:** Accepted; narrows the "no discovery surface in v1" entry.
+
+**Context:** A three-agent review (implementation audit, competitor research, ideas brainstorm) of how new users find people to follow found the platform currently has zero mechanism for it. The research's own recommended low-risk tier (shareable profile links, invite links, follower/following lists, a "recommended by" relation, an empty-Newsstand fix, a QR code) was presented, but explicitly asked as a fork: build that broader tier now, or prioritize differently. The user chose to defer most of that tier and prioritize search instead.
+
+**Decision:** Build profile search by handle/display name now. Defer the rest of the Circulation Desk recommended tier (share/invite links, follower/following lists, recommended-by, empty-state fix, QR code) until a later pass.
+
+**Consequences:** This is a narrow, explicit reopening of "no discovery surface in v1" — search only, not a browse/explore/category page. It also raises the stakes on the still-accepted "no moderation in v1" risk, since search makes impersonation findable with no report path behind it; the user was told this directly and chose to proceed, so that risk remains accepted but is now more load-bearing than when originally accepted. Because T47 (SEO/social metadata) was only a prerequisite for the now-deferred shareable-link work, it stays optional near-term polish rather than becoming urgent.
+
+## 2026-08-25 — Add a minimal in-app follow-request signal (first exception to "no notifications in v1")
+
+**Status:** Accepted; narrows the "no notifications in v1" scope call from the original design doc.
+
+**Context:** The original design intentionally shipped v1 with no notifications, on the assumption that private-profile follow approvals would be rare enough to check for manually. Adding profile search increases how often a stranger can find and request to follow a private profile, straining that assumption.
+
+**Decision:** Add a minimal in-app signal (e.g. a badge/count) on a profile owner's own profile when they have a pending follow request — in-app only, no push/email/notification center.
+
+**Consequences:** "No notifications in v1" no longer means zero signal anywhere; it now means no push/email/notification-center infrastructure, with the one carved-out exception being visibility into one's own pending follow requests.

@@ -78,4 +78,4 @@ Grew out of a three-agent research pass (implementation audit, competitor resear
 
 ## Bugs
 
-- [ ] `T52` Fix: typing space or Enter into a text block's editor does nothing — agent — root cause identified in `src/components/zines/page-renderer.tsx`: the block wrapper `div` has `onKeyDown={selectFromKeyboard}` (line ~98), which calls `event.preventDefault()` on Space/Enter for keyboard-accessible block selection, but doesn't check whether the block is already in edit mode; keydown events from the descendant `<textarea>` (line ~106) bubble up into it while typing and get swallowed. Guard `selectFromKeyboard` so it no-ops once `editingTextBlockId` matches the block, or stop propagation from the textarea's own `onKeyDown`.
+- [x] `T52` Fix: typing space or Enter into a text block's editor does nothing — agent — done; the block keyboard-selection handler now ignores bubbled keystrokes while its inline text editor is active

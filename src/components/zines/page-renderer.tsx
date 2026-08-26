@@ -84,6 +84,7 @@ export function PageRenderer({
           if (block.type === "text") onEditText?.(block.id);
         };
         const selectFromKeyboard = (event: KeyboardEvent<HTMLDivElement>) => {
+          if (block.id === editingTextBlockId) return;
           if (event.key !== "Enter" && event.key !== " ") return;
           event.preventDefault();
           beginTextEditing();
