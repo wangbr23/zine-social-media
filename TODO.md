@@ -24,8 +24,8 @@ Task format: `- [ ] \`T<n>\` <description> — <manual|agent>[, depends-on: T<a>
 - [x] `T17` Zine reader view — public page rendering a zine's pages, page navigation — agent, depends-on: T16 — done; published profile cards link to a read-only handle/slug route with ordered page rendering, button/keyboard navigation, and existing private-magazine access enforcement
 - [x] `T18` Magazine profile page — own + public view, Zines/Drafts tabs, visibility toggle — agent, depends-on: T13
 - [x] `T19` Follow/unfollow, including the pending-approval flow for private magazines — agent, depends-on: T18
-- [ ] `T20` Likes + comments on the reader view — agent, depends-on: T17
-- [ ] `T21` Newsstand feed — chronological zines from followed users only — agent, depends-on: T19, T17
+- [x] `T20` Likes + comments on the reader view — agent, depends-on: T17
+- [x] `T21` Newsstand feed — chronological zines from followed users only — agent, depends-on: T19, T17
 - [x] `T22` App shell / bottom nav (Newsstand, Create, Profile) — agent, depends-on: T13
 
 ## Creation experience overhaul (see `docs/designs/creation-desk-review.md` note below)
@@ -41,10 +41,10 @@ Grew out of a three-agent review (implementation audit, competitor research, ide
 - [x] `T30` Link the draft zine cards on the profile page into the editor (they're currently unclickable dead ends) — agent — done; published cards left as-is
 - [x] `T31` Add an unsaved-changes warning before the editor's exit action discards edits — agent, depends-on: T24 — done; tracks dirty state per-page since edits survive a page switch, plus a `beforeunload` guard
 - [x] `T32` Sticker/shape tray: a curated `ShapeBlock` type (torn-paper strip, tape, speech bubble, starburst), colorable from the zine palette — agent, depends-on: T27, T29, T40 — done; all four shapes use the shared renderer, direct-manipulation/layer controls, server validation, and palette-aware inspector
-- [ ] `T33` Image treatments: frame/mask presets (polaroid, torn-edge, circle) and non-destructive filters (duotone, xerox, riso) tied to the zine palette — agent, depends-on: T29, T32
+- [x] `T33` Image treatments: frame/mask presets (polaroid, torn-edge, circle) and non-destructive filters (duotone, xerox, riso) tied to the zine palette — agent, depends-on: T29, T32
 - [x] `T34` Auto-arrange: a "shuffle this page" composition generator over a page's images (scattered mood-board, editorial grid, hero-plus-three) — agent, depends-on: T28, T29, T40 — done; each click cycles to a distinct image-only composition while preserving text, shapes, and layer order, and remains an unsaved page edit until explicitly saved
 - [x] `T35` Layers panel: bring-forward/send-back controls and a visible stack, using the existing block-array order as z-order — agent, depends-on: T27 — done; stack is shown top-first, selecting a layer selects its canvas block, and adjacent reorder controls persist through the existing page save
-- [ ] `T36` Page-turn transitions for the reader view — agent, depends-on: T17 — differentiating-tier, but genuinely blocked on the reader view existing first
+- [x] `T36` Page-turn transitions for the reader view — agent, depends-on: T17 — done; directional page animation respects reduced-motion preferences and ignores initial-load or blocked-boundary navigation
 - [x] `T37` Delete owned drafts from the profile and editor, with confirmation and published-zine protection — agent — done
 - [x] `T45` Treat page one as the zine cover/title page: seed new drafts with their real title and render the authored first page on profile cards — agent — done; existing cover-image URLs remain a legacy fallback
 - [x] `T46` Allow profile owners to permanently delete published zines with confirmation, ownership/status enforcement, and safe Blob cleanup — agent — done
@@ -60,3 +60,22 @@ Created from the 2026-08-23 whole-repository cleanup audit. Automated-test setup
 - [x] `T42` Define one shared typed curated-font catalog used by block creation, the inspector, validation, and starter templates — agent — done; one browser-safe catalog now supplies the font union, options, default, and runtime guard
 - [x] `T43` Remove avoidable non-null assertions and unsafe editor casts, and model the five-color zine palette more precisely at TypeScript boundaries — agent, depends-on: T38, T39, T40, T41, T42 — done; exact palette tuples, runtime-narrowed input, and type-safe block patches replace assertions
 - [x] `T44` Replace Create Next App README/scaffolding, remove confirmed-unused public assets, fill AGENTS.md architecture/conventions, and reconcile the documented template count with implemented scope — agent — done; repository docs now describe actual setup and architecture, the v1 design names its two implemented starters, and unused starter SVGs are removed
+
+## Post-launch-readiness polish
+
+Surfaced from a full-repo audit after the last tracked task (T46) merged — the entire prior backlog is complete. Two other candidates from that audit (real access control for private-profile images; basic comment reporting) were explicitly declined for now and left as accepted tradeoffs in `docs/decisions.md` — not listed here.
+
+- [x] `T47` Add per-page SEO/social metadata (title, description, `og:image`) to the magazine profile and zine reader routes — agent — done; dynamic `ImageResponse` title cards avoid publish-time storage while privacy-safe generic metadata protects private magazines
+- [x] `T48` Let a user delete or edit their own comment on the reader view — agent — done; server actions enforce comment ownership and deletion uses explicit confirmation
+- [x] `T49` Replace the default Next.js 404 with a custom not-found page matching the app's editorial visual system — agent — done; added an accessible editorial 404 with recovery links to home and Newsstand
+
+## Finding people to follow
+
+Grew out of a three-agent research pass (implementation audit, competitor research, ideas brainstorm) into how new users find people to follow — synthesized as "The Circulation Desk" memo (not saved to disk verbatim). The user chose to prioritize search over the memo's own recommended low-risk tier (share/invite links, follower lists, recommended-by, empty-state fix, QR code); see `docs/decisions.md`'s 2026-08-25 entries for both scope calls this made, including the narrow reopening of "no discovery surface in v1" and the accepted risk it raises around "no moderation in v1."
+
+- [ ] `T50` Add profile search by handle/display name — agent — simple case-insensitive partial match (SQL `ILIKE`, no search service/infra), surfaced via a search entry point in the app shell; a result shows the same handle/displayName/avatar-level info a private profile already reveals to a signed-out exact-handle visit today, so it doesn't newly expose anything currently gated — full profile content stays behind the existing follow/approval check
+- [ ] `T51` Add a minimal in-app pending-follow-request signal on a profile owner's own profile (badge/count only — no push, no email, no notification center) — agent
+
+## Bugs
+
+- [ ] `T52` Fix: typing space or Enter into a text block's editor does nothing — agent — root cause identified in `src/components/zines/page-renderer.tsx`: the block wrapper `div` has `onKeyDown={selectFromKeyboard}` (line ~98), which calls `event.preventDefault()` on Space/Enter for keyboard-accessible block selection, but doesn't check whether the block is already in edit mode; keydown events from the descendant `<textarea>` (line ~106) bubble up into it while typing and get swallowed. Guard `selectFromKeyboard` so it no-ops once `editingTextBlockId` matches the block, or stop propagation from the textarea's own `onKeyDown`.
